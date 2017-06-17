@@ -1,0 +1,38 @@
+runtime: python27
+api_version: 1
+threadsafe: true
+
+libraries:
+- name: jinja2
+  version: latest
+
+handlers:
+- url: /favicon.ico
+  static_files: favicon.ico
+  upload: favicon.ico
+  mime_type: image/x-icon
+- url: /.*
+  script: main.app
+  secure: always
+
+skip_files: |
+  ^(.*/)?(
+  (_backup/.*)|
+  (\.cache/.*)|
+  (\.idea/.*)|
+  (app\.yaml)|
+  (app\.yml)|
+  (app\.yml)|
+  (index\.yaml)|
+  (index\.yml)|
+  (#.*#)|
+  (.*~)|
+  (.*\.py[co])|
+  (.*\.po)|
+  (.*\.pot)|
+  (.*\.scss)|
+  (\..*)|
+  (README\.md)|
+  (README\.pdf)|
+  (LICENSE)|
+  )$
