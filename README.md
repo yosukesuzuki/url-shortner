@@ -23,6 +23,3 @@ PYTHONPATH="/path/to/google-cloud-sdk/platform/google_appengine:$PYTHONPATH"
 export PYTHONPATH
 ```
 
-Libray/Components/OSS
-
-* [reveal.js](https://github.com/hakimel/reveal.js)
