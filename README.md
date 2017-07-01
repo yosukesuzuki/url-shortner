@@ -1,4 +1,4 @@
-# App Engine Standard Flask application
+# URL Shortne application
 
 Setup Google Cloud SDK
 
