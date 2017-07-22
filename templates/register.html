@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="columns">
+        <div class="is-half column">
+            <form method="post" action="/api/register">
+                <div class="field">
+                    <label class="label">Email</label>
+                    <div class="control">
+                        <input class="input" type="email" placeholder="{{ google_account._User__email }}" disabled>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Name</label>
+                    <div class="control">
+                        <input class="input" type="text" placeholder="Your Name" name="user_name">
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Team Name</label>
+                    <div class="control">
+                        <input class="input" type="text" placeholder="Your Team Name" name="team_name">
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Team domain</label>
+                    <div class="control">
+                        <input class="input" type="text" placeholder="Your Team Domain" name="sub_domain">.jmpt.me
+                    </div>
+                </div>
+                <div class="field is-grouped">
+                    <div class="control">
+                        <button class="button is-primary">Submit</button>
+                    </div>
+                    <div class="control">
+                        <button class="button is-link">Cancel</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

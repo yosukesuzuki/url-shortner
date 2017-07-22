@@ -16,13 +16,25 @@
 import logging
 
 from flask import Flask, render_template
+from flask_restful import Api
+from google.appengine.api import users
+from rests import RegisterAPI
 
 app = Flask(__name__)
+api = Api(app)
+
+api.add_resource(RegisterAPI, '/rest/register')
 
 
 @app.route('/')
 def index():
     return render_template('index.html')
+
+
+@app.route('/register')
+def register():
+    google_account = users.get_current_user()
+    return render_template('register.html', google_account=google_account)
 
 
 @app.errorhandler(500)
