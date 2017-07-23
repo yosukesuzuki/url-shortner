@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>jmpt.me, URL Shortner </title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.4.1/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.4.3/css/bulma.min.css">
     <style>
         .section {
             padding: 3rem 1.5rem;
@@ -13,13 +13,24 @@
 </head>
 
 <body>
-<nav class="nav">
-    <div class="nav-left">
-        <a class="nav-item" href="/">
-            jmpt.me
-        </a>
-    </div>
-</nav>
+<div class="container">
+    <nav class="navbar ">
+        <div class="navbar-brand">
+            <a class="navbar-item" href="/">
+                jmpt.me
+            </a>
+            <div class="navbar-item">
+                <div class="field is-grouped">
+                    <p class="control">
+                        <a class="button is-primary" href="/register">
+                            <span>Sign Up</span>
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </nav>
+</div>
 <section class="section">
     <div class="container">
         {% block content %}
