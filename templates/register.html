@@ -2,7 +2,7 @@
 {% block content %}
     <div class="columns">
         <div class="is-half column">
-            <form method="post" action="/rest/register">
+            <form method="post">
                 <div class="field">
                     <label class="label">Email</label>
                     <div class="control">
@@ -24,7 +24,8 @@
                 <div class="field">
                     <label class="label">Team domain</label>
                     <div class="control">
-                        <input class="input" type="text" placeholder="Your Team Domain" name="sub_domain">.jmpt.me
+                        <input class="input" type="text" placeholder="Your Team Domain" name="team_domain" style="width:33%">
+                        <span>.jmpt.me</span>
                     </div>
                 </div>
                 <div class="field is-grouped">

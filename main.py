@@ -15,15 +15,13 @@
 # [START app]
 import logging
 
-from flask import Flask, render_template
-from flask_restful import Api
+from flask import Flask, render_template, request, Response
+from forms import RegistrationForm
 from google.appengine.api import users
-from rests import RegisterAPI
+from google.appengine.ext import ndb
+from models import Team, User
 
 app = Flask(__name__)
-api = Api(app)
-
-api.add_resource(RegisterAPI, '/rest/register')
 
 
 @app.route('/')
@@ -31,8 +29,27 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/register')
+@ndb.transactional(xg=True)
+def insert_user_and_team(new_user, form_data):
+    new_team = Team(id=form_data.team_domain.data, team_name=form_data.team_name.data, billing_plan='trial',
+                    team_domain=form_data.team_domain.data)
+    new_team_key = new_team.put()
+    new_team = new_team_key.get()
+    user_key_name = form_data.team_domain.data + "_" + new_user.user_id()
+    new_user = User(id=user_key_name, user_name=form_data.user_name.data, team=new_team.key, role='primary_owner',
+                    user=new_user)
+    new_user_key = new_user.put()
+    new_user_key.get()
+    new_team.primary_owner = new_user_key
+    new_team.put()
+
+
+@app.route('/register', methods=['GET', 'POST'])
 def register():
+    form = RegistrationForm(request.form)
+    if request.method == 'POST' and form.validate():
+        insert_user_and_team(users.get_current_user(), form)
+        return Response('ok')
     google_account = users.get_current_user()
     return render_template('register.html', google_account=google_account)
 

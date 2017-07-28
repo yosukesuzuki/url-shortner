@@ -16,27 +16,12 @@ class CustomDomain(ndb.Model):
     created_at = ndb.DateTimeProperty(auto_now_add=True)
 
 
-class Team(ndb.Model):
-    """
-    team_domain is the sub domain for each team
-    primary domain is the first one in custom domain
-    """
-    team_name = ndb.StringProperty(required=True)
-    billing_plan = ndb.KeyProperty(required=True)
-    primary_owner = ndb.KeyProperty(required=True)
-    team_domain = ndb.StringProperty(required=True)
-    custom_domain = ndb.StructuredProperty(CustomDomain, repeated=True)
-    updated_at = ndb.DateTimeProperty(auto_now=True)
-    created_at = ndb.DateTimeProperty(auto_now_add=True)
-
-
 class User(ndb.Model):
     """
     key_name = team_name + "_" + user_no
 
     """
     user = ndb.UserProperty(required=True)
-    user_id = ndb.StringProperty(required=True)  # user can set
     user_name = ndb.StringProperty(required=True)  # display name
     team = ndb.KeyProperty(required=True)
     role = ndb.StringProperty(choices=('primary_owner', 'admin', 'normal'))
@@ -44,12 +29,28 @@ class User(ndb.Model):
     created_at = ndb.DateTimeProperty(auto_now_add=True)
 
 
-class ShortURL(ndb.model):
+class Team(ndb.Model):
+    """
+    team_domain is the sub domain for each team
+    primary domain is the first one in custom domain
+    key_name == team_domain
+    """
+    team_name = ndb.StringProperty(required=True)
+    billing_plan = ndb.StringProperty(choices=('trial', 'free', 'silver', 'gold', 'platinum'), required=True)
+    primary_owner = ndb.KeyProperty(kind=User)
+    team_domain = ndb.StringProperty(required=True)
+    custom_domain = ndb.StructuredProperty(CustomDomain, repeated=True)
+    updated_at = ndb.DateTimeProperty(auto_now=True)
+    created_at = ndb.DateTimeProperty(auto_now_add=True)
+
+
+class ShortURL(ndb.Model):
     """
     key_name == domain name + "_" + short url path
+
     """
     long_url = ndb.StringProperty()
-    cusom_rule = ndb.JsonProperty()
+    custom_rule = ndb.JsonProperty()
     updated_at = ndb.DateTimeProperty(auto_now=True)
     created_at = ndb.DateTimeProperty(auto_now_add=True)
 
