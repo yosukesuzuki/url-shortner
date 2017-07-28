@@ -8,8 +8,7 @@ class RegistrationForm(Form):
     team_domain = StringField('Team Domain', [validators.Length(min=1, max=10)])
 
     def validate_team_domain(form, field):
-        if field.data is None or len(field.data) < 1:
-            raise ValidationError('Team Domain is invalid')
-        v_team_domain = Team.get_by_id(field.data)
-        if v_team_domain is not None:
-            raise ValidationError('Team Domain already used')
+        if len(field.data) > 0:
+            v_team_domain = Team.get_by_id(field.data)
+            if v_team_domain is not None:
+                raise ValidationError('Team Domain already used')

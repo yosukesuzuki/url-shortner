@@ -12,21 +12,36 @@
                 <div class="field">
                     <label class="label">Name</label>
                     <div class="control">
-                        <input class="input" type="text" placeholder="Your Name" name="user_name">
+                        <input class="input" type="text" placeholder="Your Name" name="user_name" value="{% if form.user_name.data %}{{ form.user_name.data }}{% endif %}">
                     </div>
+                    {% if form.user_name.errors %}
+                        {% for e in form.user_name.errors %}
+                            <p class="help is-danger">{{ e }}</p>
+                        {% endfor %}
+                    {% endif %}
                 </div>
                 <div class="field">
                     <label class="label">Team Name</label>
                     <div class="control">
-                        <input class="input" type="text" placeholder="Your Team Name" name="team_name">
+                        <input class="input" type="text" placeholder="Your Team Name" name="team_name" value="{% if form.team_name.data %}{{ form.team_name.data }}{% endif %}">
                     </div>
+                    {% if form.team_name.errors %}
+                        {% for e in form.team_name.errors %}
+                            <p class="help is-danger">{{ e }}</p>
+                        {% endfor %}
+                    {% endif %}
                 </div>
                 <div class="field">
                     <label class="label">Team domain</label>
                     <div class="control">
-                        <input class="input" type="text" placeholder="Your Team Domain" name="team_domain" style="width:33%">
+                        <input class="input" type="text" placeholder="Your Team Domain" name="team_domain" style="width:33%" value="{% if form.team_domain.data %}{{ form.team_domain.data }}{% endif %}">
                         <span>.jmpt.me</span>
                     </div>
+                    {% if form.team_domain.errors %}
+                        {% for e in form.team_domain.errors %}
+                            <p class="help is-danger">{{ e }}</p>
+                        {% endfor %}
+                    {% endif %}
                 </div>
                 <div class="field is-grouped">
                     <div class="control">

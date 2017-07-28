@@ -51,7 +51,7 @@ def register():
         insert_user_and_team(users.get_current_user(), form)
         return Response('ok')
     google_account = users.get_current_user()
-    return render_template('register.html', google_account=google_account)
+    return render_template('register.html', google_account=google_account, form=form)
 
 
 @app.errorhandler(500)
