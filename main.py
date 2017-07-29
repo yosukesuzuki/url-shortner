@@ -31,11 +31,11 @@ def index():
 
 @ndb.transactional(xg=True)
 def insert_user_and_team(new_user, form_data):
-    new_team = Team(id=form_data.team_domain.data, team_name=form_data.team_name.data, billing_plan='trial',
+    new_team = Team(team_name=form_data.team_name.data, billing_plan='trial',
                     team_domain=form_data.team_domain.data)
     new_team_key = new_team.put()
     new_team = new_team_key.get()
-    user_key_name = form_data.team_domain.data + "_" + new_user.user_id()
+    user_key_name = "{}_{}".format(new_team_key.id(), new_user.user_id())
     new_user = User(id=user_key_name, user_name=form_data.user_name.data, team=new_team.key, role='primary_owner',
                     user=new_user)
     new_user_key = new_user.put()

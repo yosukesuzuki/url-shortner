@@ -9,6 +9,8 @@ class RegistrationForm(Form):
 
     def validate_team_domain(form, field):
         if len(field.data) > 0:
-            v_team_domain = Team.get_by_id(field.data)
-            if v_team_domain is not None:
+            q = Team.query()
+            q = q.filter(Team.team_domain == field.data)
+            v_team_domain = q.fetch(10)
+            if len(v_team_domain) > 0:
                 raise ValidationError('Team Domain already used')
