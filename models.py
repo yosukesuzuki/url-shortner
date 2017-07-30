@@ -25,6 +25,7 @@ class User(ndb.Model):
     user_name = ndb.StringProperty(required=True)  # display name
     team = ndb.KeyProperty(required=True)
     role = ndb.StringProperty(choices=('primary_owner', 'admin', 'normal'))
+    in_use = ndb.BooleanProperty(default=True, required=True)
     updated_at = ndb.DateTimeProperty(auto_now=True)
     created_at = ndb.DateTimeProperty(auto_now_add=True)
 
@@ -40,6 +41,7 @@ class Team(ndb.Model):
     primary_owner = ndb.KeyProperty(kind=User)
     team_domain = ndb.StringProperty(required=True)
     custom_domain = ndb.StructuredProperty(CustomDomain, repeated=True)
+    in_use = ndb.BooleanProperty(default=True, required=True)
     updated_at = ndb.DateTimeProperty(auto_now=True)
     created_at = ndb.DateTimeProperty(auto_now_add=True)
 
