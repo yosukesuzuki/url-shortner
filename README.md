@@ -21,13 +21,12 @@ Set python path for local test
 
 ```bash
 PYTHONPATH="/path/to/google-cloud-sdk/platform/google_appengine:$PYTHONPATH"
-export PYTHONPATH
 ```
 
 run test
 
 ```bash
-py.test .
+PYTHONPATH="./lib:$PYTHONPATH" py.test .
 
 ```
 
