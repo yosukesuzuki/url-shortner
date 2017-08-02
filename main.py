@@ -25,10 +25,11 @@ app = Flask(__name__)
 
 
 def validate_team_user(team_id, user_id):
-    user_id = "{}_{}".format(team_id, user_id)
-    team_user = User.get_by_id(user_id)
+    team_user_id = "{}_{}".format(team_id, user_id)
+    team_user = User.get_by_id(team_user_id)
     if team_user and team_user.in_use is True:
         return True
+    logging.info('validation failed: team_id = {}, user_id = {}'.format(team_id, user_id))
     return False
 
 
@@ -50,16 +51,16 @@ def index():
 
 
 @ndb.transactional(xg=True)
-def insert_user_and_team(new_user, form_data):
+def insert_user_and_team(user, form_data):
     new_team = Team(team_name=form_data.team_name.data, billing_plan='trial',
                     team_domain=form_data.team_domain.data)
     new_team_key = new_team.put()
     new_team = new_team_key.get()
     new_team_key_id = new_team_key.id()
-    user_key_name = "{}_{}".format(new_team_key_id, new_user.user_id())
-    new_user = User(id=user_key_name, user_name=form_data.user_name.data, team=new_team.key, role='primary_owner',
-                    user=new_user)
-    new_user_key = new_user.put()
+    user_key_name = "{}_{}".format(new_team_key_id, user.user_id())
+    new_team_user = User(id=user_key_name, user_name=form_data.user_name.data, team=new_team.key, role='primary_owner',
+                         user=user)
+    new_user_key = new_team_user.put()
     new_user_key.get()
     new_team.primary_owner = new_user_key
     new_team.put()
@@ -77,11 +78,31 @@ def register():
     return render_template('register.html', google_account=google_account, form=form)
 
 
+@app.route('/signin', methods=['GET'])
+def signin():
+    response = make_response(redirect(url_for('index')))
+    q = User.query()
+    q = q.filter(User.user == users.get_current_user())
+    result = q.fetch(1000)
+    if len(result) == 1:
+        team_setting_id = result[0].key.id().split('_')[:1][0]
+        if validate_team_user(team_setting_id, users.get_current_user().user_id()):
+            logging.info('set cookie, {}'.format(team_setting_id))
+            response.set_cookie('team', value=team_setting_id)
+    return response
+
+
+@app.route('/signout', methods=['GET'])
+def signout():
+    response = make_response(redirect(url_for('index')))
+    response.set_cookie('team', '', expires=0)
+    return response
+
+
 @app.errorhandler(500)
 def server_error(e):
     # Log the error and stacktrace.
     logging.exception('An error occurred during a request.')
     return 'An internal error occurred.', 500
-
 
 # [END app]
