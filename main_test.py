@@ -13,7 +13,9 @@
 # limitations under the License.
 
 import unittest
+from urlparse import urlparse
 
+from google.appengine.datastore import datastore_stub_util
 from google.appengine.ext import ndb
 from google.appengine.ext import testbed
 from main import app
@@ -34,3 +36,33 @@ class MainHandlerTest(unittest.TestCase):
     def testIndex(self):
         response = self.app.get('/')
         self.assertEqual(response.status_code, 200)
+
+
+class RegisterHandlerTest(unittest.TestCase):
+    def setUp(self):
+        self.policy = datastore_stub_util.PseudoRandomHRConsistencyPolicy(probability=0)
+        self.testbed = testbed.Testbed()
+        self.testbed.activate()
+        self.testbed.init_datastore_v3_stub(consistency_policy=self.policy)
+        self.testbed.init_memcache_stub()
+        self.testbed.setup_env(
+            user_email='example@example.com',
+            user_id='1234567890',
+            user_is_admin='1',
+            overwrite=True)
+        self.app = app.test_client()
+        ndb.get_context().clear_cache()
+
+    def tearDown(self):
+        self.testbed.deactivate()
+
+    def testRegisterGet(self):
+        response = self.app.get('/register')
+        self.assertEqual(response.status_code, 200)
+
+    def testRegisterPost(self):
+        response = self.app.post('/register',
+                                 data={'user_name': 'test user', 'team_name': 'test team', 'team_domain': 'test'},
+                                 follow_redirects=False)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(urlparse(response.headers.get('Location')).path, '/')
