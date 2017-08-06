@@ -1,0 +1,21 @@
+machine:
+  environment:
+    # Add app engine sdk to pythonpath for local unit tests.
+    PYTHONPATH: ${PYTHONPATH}:${HOME}/google_appengine:./lib
+
+    # Replace this with your project ID
+    GCLOUD_PROJECT: "continuous-deployment-circle"
+
+
+dependencies:
+  pre:
+    - python getlatestsdk.py
+    - unzip -q -d $HOME google_appengine.zip
+    - pip install -r requirements.txt -t lib
+    - pip install pytest
+
+#set environment variable PATH = $PATH:$HOME/google_appengine/
+
+test:
+  override:
+    - export PATH=$HOME/google_appengine:$PATH && py.test .
