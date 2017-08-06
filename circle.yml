@@ -57,8 +57,6 @@ jobs:
             . venv/bin/activate
             pip install -r requirements.txt -t lib
             pip install pytest
-            export PATH=$HOME/google_appengine:$PATH
-            export PYTHONPATH=$HOME/google_appengine:$PYTHONPATH
 
       - save_cache:
           paths:
@@ -70,6 +68,8 @@ jobs:
           name: run tests
           command: |
             . venv/bin/activate
+            export PATH=$HOME/google_appengine:$PATH
+            export PYTHONPATH=$HOME/google_appengine:$PYTHONPATH
             PYTHONPATH="./lib:$PYTHONPATH" py.test .
 
 
