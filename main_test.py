@@ -12,16 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
+import unittest
+
+from google.appengine.ext import ndb
+from google.appengine.ext import testbed
+from main import app
 
 
-@pytest.fixture
-def app():
-    import main
-    main.app.testing = True
-    return main.app.test_client()
+class MainHandlerTest(unittest.TestCase):
+    def setUp(self):
+        self.testbed = testbed.Testbed()
+        self.testbed.activate()
+        self.testbed.init_datastore_v3_stub()
+        self.testbed.init_memcache_stub()
+        self.app = app.test_client()
+        ndb.get_context().clear_cache()
 
+    def tearDown(self):
+        self.testbed.deactivate()
 
-def test_index(app):
-    r = app.get('/')
-    assert r.status_code == 200
+    def testIndex(self):
+        response = self.app.get('/')
+        self.assertEqual(response.status_code, 200)

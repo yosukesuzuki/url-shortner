@@ -35,7 +35,7 @@ PYTHONPATH="./lib:$PYTHONPATH" py.test .
 * url shorten
 * custom short link
 * api
-    * generate oauth2 token from client id/secret
+    * generate oauth2 token on setting page 
     * generate short url
 * user model based on enhancement feature
 * send log to BigQuery

@@ -68,7 +68,7 @@ class ShortURLID(ndb.Model):
         """Return our path, our base-36 encoded id"""
         if not self.is_saved():
             return None
-        nid = self.key().id()
+        nid = self.key.id()
         s = []
         while nid:
             nid, c = divmod(nid, ShortURLID.BASE)
