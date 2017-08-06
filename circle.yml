@@ -56,6 +56,7 @@ jobs:
             virtualenv -p python2.7 venv
             . venv/bin/activate
             python ~/repo/get_latest_sdk.py
+            unzip -q -d $HOME ~/repo/google_appengine.zip
             pip install -r requirements.txt -t lib
             pip install pytest
 
