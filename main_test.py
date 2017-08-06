@@ -19,6 +19,7 @@ from google.appengine.datastore import datastore_stub_util
 from google.appengine.ext import ndb
 from google.appengine.ext import testbed
 from main import app
+from models import User, Team
 
 
 class MainHandlerTest(unittest.TestCase):
@@ -40,7 +41,7 @@ class MainHandlerTest(unittest.TestCase):
 
 class RegisterHandlerTest(unittest.TestCase):
     def setUp(self):
-        self.policy = datastore_stub_util.PseudoRandomHRConsistencyPolicy(probability=0)
+        self.policy = datastore_stub_util.PseudoRandomHRConsistencyPolicy(probability=1)
         self.testbed = testbed.Testbed()
         self.testbed.activate()
         self.testbed.init_datastore_v3_stub(consistency_policy=self.policy)
@@ -66,3 +67,14 @@ class RegisterHandlerTest(unittest.TestCase):
                                  follow_redirects=False)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(urlparse(response.headers.get('Location')).path, '/')
+        team_results = Team.query().fetch(1000)
+        self.assertEqual(len(team_results), 1)
+        self.assertEqual(team_results[0].team_name, 'test team')
+        self.assertEqual(team_results[0].billing_plan, 'trial')
+        self.assertEqual(team_results[0].team_domain, 'test')
+        user_results = User.query().fetch(1000)
+        self.assertEqual(len(user_results), 1)
+        self.assertEqual(user_results[0].user_name, 'test user')
+        self.assertEqual(user_results[0].team, team_results[0].key)
+        self.assertEqual(user_results[0].role, 'primary_owner')
+        self.assertEqual(user_results[0].key.id(), '{}_{}'.format(team_results[0].key.id(), '1234567890'))
