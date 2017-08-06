@@ -1,21 +1,77 @@
-machine:
-  environment:
-    # Add app engine sdk to pythonpath for local unit tests.
-    PYTHONPATH: ${PYTHONPATH}:${HOME}/google_appengine:./lib
+# machine:
+#  environment:
+#    # Add app engine sdk to pythonpath for local unit tests.
+#    PYTHONPATH: ${PYTHONPATH}:${HOME}/google_appengine:./lib
+#
+#    # Replace this with your project ID
+#    GCLOUD_PROJECT: "continuous-deployment-circle"
 
-    # Replace this with your project ID
-    GCLOUD_PROJECT: "continuous-deployment-circle"
 
-
-dependencies:
-  pre:
-    - python getlatestsdk.py
-    - unzip -q -d $HOME google_appengine.zip
-    - pip install -r requirements.txt -t lib
-    - pip install pytest
-
+#dependencies:
+#  pre:
+#    - python getlatestsdk.py
+#    - unzip -q -d $HOME google_appengine.zip
+#    - pip install -r requirements.txt -t lib
+#    - pip install pytest
+#
 #set environment variable PATH = $PATH:$HOME/google_appengine/
 
-test:
-  override:
-    - export PATH=$HOME/google_appengine:$PATH && py.test .
+#test:
+#  override:
+#    - export PATH=$HOME/google_appengine:$PATH && py.test .
+
+# Python CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-python/ for more details
+#
+version: 2
+jobs:
+  build:
+    docker:
+      # specify the version you desire here
+      # use `-browsers` prefix for selenium tests, e.g. `3.6.1-browsers`
+      - image: circleci/python:2.7.12
+
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+      # - image: circleci/postgres:9.4
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "requirements.txt" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      - run:
+          name: install dependencies
+          command: |
+            pip install virtualenv
+            virtualenv -p python2.7 venv
+            . venv/bin/activate
+            pip install -r requirements.txt -t lib
+            pip install pytest
+            export ${PYTHONPATH}:${HOME}/google_appengine:./lib
+
+      - save_cache:
+          paths:
+            - ./venv
+          key: v1-dependencies-{{ checksum "requirements.txt" }}
+
+      # run tests!
+      - run:
+          name: run tests
+          command: |
+            . venv/bin/activate
+            pytest .
+
+
+      - store_artifacts:
+          path: test-reports
+          destination: test-reports
