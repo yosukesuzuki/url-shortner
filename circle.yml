@@ -75,7 +75,7 @@ jobs:
             export PATH=$HOME/google_appengine:$PATH
             export PYTHONPATH=$HOME/google_appengine:$PYTHONPATH
             PYTHONPATH="./lib:$PYTHONPATH" py.test .
-            flake8 . --exclude=./lib --max-line-length=120
+            flake8 . --exclude=./lib,./venv --max-line-length=120
 
 
       - store_artifacts:
