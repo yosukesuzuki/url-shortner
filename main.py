@@ -103,7 +103,7 @@ def signout():
 def shorten():
     team_id = request.cookies.get('team', False)
     if team_id is False:
-        return make_response(jsonify({'errors': 'bad request'}), 401)
+        return make_response(jsonify({'errors': 'bad request, should have team session data'}), 401)
     user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
     user_entity = User.get_by_id(user_key_name)
     form = LongURLForm(request.form)
@@ -114,7 +114,7 @@ def shorten():
         short_url.put()
         result = {'short_url': "{}/{}".format(form.domain.data, path)}
         return jsonify(result)
-    return make_response(jsonify({'errors': 'bad request'}), 401)
+    return make_response(jsonify({'errors': 'bad request, invalid form data'}), 401)
 
 
 @app.errorhandler(500)
