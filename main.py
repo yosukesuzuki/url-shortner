@@ -15,11 +15,11 @@
 # [START app]
 import logging
 
-from flask import Flask, render_template, request, redirect, url_for, make_response
-from forms import RegistrationForm
+from flask import Flask, render_template, request, redirect, url_for, make_response, jsonify
+from forms import RegistrationForm, LongURLForm
 from google.appengine.api import users
 from google.appengine.ext import ndb
-from models import Team, User
+from models import Team, User, ShortURL, ShortURLID
 
 app = Flask(__name__)
 
@@ -97,6 +97,24 @@ def signout():
     response = make_response(redirect(url_for('index')))
     response.set_cookie('team', '', expires=0)
     return response
+
+
+@app.route('/shorten', methods=['POST'])
+def shorten():
+    team_id = request.cookies.get('team', False)
+    if team_id is False:
+        return make_response(jsonify({'errors': 'bad request'}), 401)
+    user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
+    user_entity = User.get_by_id(user_key_name)
+    form = LongURLForm(request.form)
+    if form.validate():
+        path = ShortURLID.path
+        key_name = "{}_{}".format(form.domain.data, path)
+        short_url = ShortURL(id=key_name, long_url=form.url.data, created_by=user_entity.key)
+        short_url.put()
+        result = {'short_url': "{}/{}".format(form.domain.data, path)}
+        return jsonify(result)
+    return make_response(jsonify({'errors': 'bad request'}), 401)
 
 
 @app.errorhandler(500)

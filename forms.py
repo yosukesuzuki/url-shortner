@@ -1,3 +1,4 @@
+import validators as altvalidater
 from models import Team
 from wtforms import Form, StringField, validators, ValidationError
 
@@ -14,3 +15,12 @@ class RegistrationForm(Form):
             v_team_domain = q.fetch(10)
             if len(v_team_domain) > 0:
                 raise ValidationError('Team Domain already used')
+
+
+class LongURLForm(Form):
+    url = StringField('Long URL', [validators.URL('String posted was not valid URL')])
+    domain = StringField('Domain Name', [validators.Length(min=1, max=25)])
+
+    def validate_domain(form, field):
+        if len(field.data) > 0 and altvalidater.domain(field.data) is False:
+            raise ValidationError('invalid domain name')
