@@ -61,6 +61,7 @@ jobs:
             pip install pytest
             pip install pyyaml
             pip install flake8
+            pip install tox
 
       - save_cache:
           paths:
