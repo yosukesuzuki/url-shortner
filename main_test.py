@@ -97,11 +97,6 @@ class ShortenHandlerTest(unittest.TestCase):
             overwrite=True)
         self.app = app.test_client()
         ndb.get_context().clear_cache()
-
-    def tearDown(self):
-        self.testbed.deactivate()
-
-    def testShortenPost(self):
         new_team = Team(team_name='hoge', billing_plan='trial',
                         team_domain='ysk')
         new_team_key = new_team.put()
@@ -112,6 +107,11 @@ class ShortenHandlerTest(unittest.TestCase):
         new_team_user = User(id=user_key_name, user_name='hoge', team=new_team.key, role='primary_owner',
                              user=users.get_current_user())
         new_team_user.put()
+
+    def tearDown(self):
+        self.testbed.deactivate()
+
+    def testShortenPost(self):
         bad_response = self.app.post('/func/shorten',
                                      data={'url': 'http://github.com', 'domain': 'jmpt.me'},
                                      follow_redirects=False)
@@ -128,3 +128,13 @@ class ShortenHandlerTest(unittest.TestCase):
                                     data={'url': 'hoge.hage', 'domain': 'jmpt.me'},
                                     follow_redirects=False)
         self.assertEqual(json.loads(bad_request.data)['errors'], 'bad request, invalid form data')
+
+    def testCustomeShortenPost(self):
+        self.app.set_cookie('localhost', 'team', '1')
+        response = self.app.post('/func/shorten',
+                                 data={'url': 'https://github.com/yosukesuzuki/url-shortner', 'domain': 'jmpt.me',
+                                       'custom_path': 'jmptme'},
+                                 follow_redirects=False)
+        self.assertEqual(response.status_code, 200)
+        short_urls = ShortURL.query().order(-ShortURL.created_at).fetch(1000)
+        self.assertEqual(short_urls[0].key.id(), 'jmpt.me_jmptme')

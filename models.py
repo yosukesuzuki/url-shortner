@@ -59,20 +59,6 @@ class ShortURL(ndb.Model):
 
 
 class ShortURLID(ndb.Model):
+    long_url = ndb.StringProperty()
     created_at = ndb.DateTimeProperty(auto_now_add=True)
 
-    KEY_BASE = "0123456789abcdefghijklmnopqrstuvwxyz"
-    BASE = 36
-
-    @property
-    def path(self):
-        """Return our path, our base-36 encoded id"""
-        if not self.is_saved():
-            return None
-        nid = self.key.id()
-        s = []
-        while nid:
-            nid, c = divmod(nid, ShortURLID.BASE)
-            s.append(ShortURLID.KEY_BASE[c])
-        s.reverse()
-        return "".join(s)

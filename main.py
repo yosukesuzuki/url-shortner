@@ -41,6 +41,7 @@ def team_id_required(f):
         if validate_team_user(team_setting_id, users.get_current_user().user_id()) is False:
             return make_response(jsonify({'errors': 'bad request, should have team session data'}), 401)
         return f(*args, **kwargs)
+
     return decorated_function
 
 
@@ -111,6 +112,20 @@ def signout():
     return response
 
 
+def generate_short_url_path(long_url):
+    KEY_BASE = "0123456789abcdefghijklmnopqrstuvwxyz"
+    BASE = 36
+    short_url_id = ShortURLID(long_url=long_url).put()
+
+    nid = short_url_id.id()
+    s = []
+    while nid:
+        nid, c = divmod(nid, BASE)
+        s.append(KEY_BASE[c])
+    s.reverse()
+    return "".join(s)
+
+
 @app.route('/func/shorten', methods=['POST'])
 @team_id_required
 def shorten():
@@ -119,7 +134,10 @@ def shorten():
     user_entity = User.get_by_id(user_key_name)
     form = LongURLForm(request.form)
     if form.validate():
-        path = ShortURLID.path
+        if len(form.custom_path.data) == 0:
+            path = generate_short_url_path(form.url.data)
+        else:
+            path = form.custom_path.data
         key_name = "{}_{}".format(form.domain.data, path)
         short_url = ShortURL(id=key_name, long_url=form.url.data, created_by=user_entity.key)
         short_url.put()
