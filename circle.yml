@@ -75,7 +75,8 @@ jobs:
             . venv/bin/activate
             export PATH=$HOME/google_appengine:$PATH
             export PYTHONPATH=$HOME/google_appengine:$PYTHONPATH
-            tox
+            PYTHONPATH="./lib:$PYTHONPATH" py.test .
+            flake8 . --exclude=./lib,./venv --max-line-length=120
 
 
       - store_artifacts:
