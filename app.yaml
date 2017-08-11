@@ -11,6 +11,18 @@ handlers:
   static_files: favicon.ico
   upload: favicon.ico
   mime_type: image/x-icon
+- url: /func/signin.*
+  script: main.app
+  secure: always
+  login: required
+- url: /func/shorten.*
+  script: main.app
+  secure: always
+  login: required
+- url: /page/register.*
+  script: main.app
+  secure: always
+  login: required
 - url: /.*
   script: main.app
   secure: always

@@ -14,6 +14,7 @@
 
 # [START app]
 import logging
+from functools import wraps
 
 from flask import Flask, render_template, request, redirect, url_for, make_response, jsonify
 from forms import RegistrationForm, LongURLForm
@@ -31,6 +32,16 @@ def validate_team_user(team_id, user_id):
         return True
     logging.info('validation failed: team_id = {}, user_id = {}'.format(team_id, user_id))
     return False
+
+
+def team_id_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        team_setting_id = request.cookies.get('team', False)
+        if validate_team_user(team_setting_id, users.get_current_user().user_id()) is False:
+            return make_response(jsonify({'errors': 'bad request, should have team session data'}), 401)
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 @app.route('/')
@@ -67,7 +78,7 @@ def insert_user_and_team(user, form_data):
     return new_team_key_id
 
 
-@app.route('/register', methods=['GET', 'POST'])
+@app.route('/page/register', methods=['GET', 'POST'])
 def register():
     form = RegistrationForm(request.form)
     if request.method == 'POST' and form.validate():
@@ -78,7 +89,7 @@ def register():
     return render_template('register.html', google_account=google_account, form=form)
 
 
-@app.route('/signin', methods=['GET'])
+@app.route('/func/signin', methods=['GET'])
 def signin():
     response = make_response(redirect(url_for('index')))
     q = User.query()
@@ -92,18 +103,18 @@ def signin():
     return response
 
 
-@app.route('/signout', methods=['GET'])
+@app.route('/func/signout', methods=['GET'])
+@team_id_required
 def signout():
     response = make_response(redirect(url_for('index')))
     response.set_cookie('team', '', expires=0)
     return response
 
 
-@app.route('/shorten', methods=['POST'])
+@app.route('/func/shorten', methods=['POST'])
+@team_id_required
 def shorten():
     team_id = request.cookies.get('team', False)
-    if team_id is False:
-        return make_response(jsonify({'errors': 'bad request, should have team session data'}), 401)
     user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
     user_entity = User.get_by_id(user_key_name)
     form = LongURLForm(request.form)

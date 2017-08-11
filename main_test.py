@@ -61,11 +61,11 @@ class RegisterHandlerTest(unittest.TestCase):
         self.testbed.deactivate()
 
     def testRegisterGet(self):
-        response = self.app.get('/register')
+        response = self.app.get('/page/register')
         self.assertEqual(response.status_code, 200)
 
     def testRegisterPost(self):
-        response = self.app.post('/register',
+        response = self.app.post('/page/register',
                                  data={'user_name': 'test user', 'team_name': 'test team', 'team_domain': 'test'},
                                  follow_redirects=False)
         self.assertEqual(response.status_code, 302)
@@ -112,19 +112,19 @@ class ShortenHandlerTest(unittest.TestCase):
         new_team_user = User(id=user_key_name, user_name='hoge', team=new_team.key, role='primary_owner',
                              user=users.get_current_user())
         new_team_user.put()
-        bad_response = self.app.post('/shorten',
+        bad_response = self.app.post('/func/shorten',
                                      data={'url': 'http://github.com', 'domain': 'jmpt.me'},
                                      follow_redirects=False)
         self.assertEqual(bad_response.status_code, 401)
         self.assertEqual(json.loads(bad_response.data)['errors'], 'bad request, should have team session data')
         self.app.set_cookie('localhost', 'team', '1')
-        response = self.app.post('/shorten',
+        response = self.app.post('/func/shorten',
                                  data={'url': 'http://github.com', 'domain': 'jmpt.me'},
                                  follow_redirects=False)
         self.assertEqual(response.status_code, 200)
         short_urls = ShortURL.query().fetch(1000)
         self.assertEqual(short_urls[0].long_url, 'http://github.com')
-        bad_request = self.app.post('/shorten',
+        bad_request = self.app.post('/func/shorten',
                                     data={'url': 'hoge.hage', 'domain': 'jmpt.me'},
                                     follow_redirects=False)
         self.assertEqual(json.loads(bad_request.data)['errors'], 'bad request, invalid form data')
