@@ -61,4 +61,3 @@ class ShortURL(ndb.Model):
 class ShortURLID(ndb.Model):
     long_url = ndb.StringProperty()
     created_at = ndb.DateTimeProperty(auto_now_add=True)
-
