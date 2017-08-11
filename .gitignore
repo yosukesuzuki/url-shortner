@@ -2,3 +2,4 @@ lib
 *.pyc
 .idea/*
 *.DS_Store
+.tox/*
