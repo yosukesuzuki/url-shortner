@@ -37,10 +37,10 @@ def validate_team_user(team_id, user_id):
 def team_id_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        team_setting_id = request.cookies.get('team', False)
-        if validate_team_user(team_setting_id, users.get_current_user().user_id()) is False:
+        team_id = request.cookies.get('team', False)
+        if validate_team_user(team_id, users.get_current_user().user_id()) is False:
             return make_response(jsonify({'errors': 'bad request, should have team session data'}), 401)
-        return f(*args, **kwargs)
+        return f(team_id, *args, **kwargs)
 
     return decorated_function
 
@@ -97,17 +97,18 @@ def signin():
     q = q.filter(User.user == users.get_current_user())
     result = q.fetch(1000)
     if len(result) == 1:
-        team_setting_id = result[0].key.id().split('_')[:1][0]
-        if validate_team_user(team_setting_id, users.get_current_user().user_id()):
-            logging.info('set cookie, {}'.format(team_setting_id))
-            response.set_cookie('team', value=team_setting_id)
+        team_id = result[0].key.id().split('_')[:1][0]
+        if validate_team_user(team_id, users.get_current_user().user_id()):
+            logging.info('set cookie, {}'.format(team_id))
+            response.set_cookie('team', value=team_id)
     return response
 
 
 @app.route('/func/signout', methods=['GET'])
 @team_id_required
-def signout():
+def signout(team_id):
     response = make_response(redirect(url_for('index')))
+    logging.info('remove cookie "team":{}'.format(team_id))
     response.set_cookie('team', '', expires=0)
     return response
 
@@ -128,8 +129,7 @@ def generate_short_url_path(long_url):
 
 @app.route('/func/shorten', methods=['POST'])
 @team_id_required
-def shorten():
-    team_id = request.cookies.get('team', False)
+def shorten(team_id):
     user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
     user_entity = User.get_by_id(user_key_name)
     form = LongURLForm(request.form)
