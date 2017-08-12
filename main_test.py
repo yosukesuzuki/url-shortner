@@ -128,6 +128,7 @@ class ShortenHandlerTest(unittest.TestCase):
         self.assertEqual(short_urls[0].long_url, 'http://github.com')
         self.assertEqual(short_urls[0].created_by, User.get_by_id(self.user_id).key)
         self.assertEqual(short_urls[0].key.id().startswith('jmpt.me_'), True)
+        self.assertEqual(short_urls[0].team.id(), self.team_id)
         bad_request = self.app.post('/func/shorten',
                                     data={'url': 'hoge.hage', 'domain': 'jmpt.me'},
                                     follow_redirects=False)
@@ -142,3 +143,4 @@ class ShortenHandlerTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         short_urls = ShortURL.query().order(-ShortURL.created_at).fetch(1000)
         self.assertEqual(short_urls[0].key.id(), 'jmpt.me_jmptme')
+        self.assertEqual(short_urls[0].team.id(), self.team_id)

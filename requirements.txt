@@ -2,3 +2,4 @@ Flask==0.12.1
 flask-restful==0.3.5
 validators==0.11.2
 WTForms==2.1
+typing==3.6.2

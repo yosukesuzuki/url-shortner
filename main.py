@@ -25,7 +25,7 @@ from models import Team, User, ShortURL, ShortURLID
 app = Flask(__name__)
 
 
-def validate_team_user(team_id, user_id):
+def validate_team_user(team_id, user_id):  # type(str, str) -> bool
     team_user_id = "{}_{}".format(team_id, user_id)
     team_user = User.get_by_id(team_user_id)
     if team_user and team_user.in_use is True:
@@ -139,7 +139,7 @@ def shorten(team_id):
         else:
             path = form.custom_path.data
         key_name = "{}_{}".format(form.domain.data, path)
-        short_url = ShortURL(id=key_name, long_url=form.url.data, created_by=user_entity.key)
+        short_url = ShortURL(id=key_name, long_url=form.url.data, team=user_entity.team, created_by=user_entity.key)
         short_url.put()
         result = {'short_url': "{}/{}".format(form.domain.data, path)}
         return jsonify(result)
