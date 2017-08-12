@@ -102,11 +102,13 @@ class ShortenHandlerTest(unittest.TestCase):
         new_team_key = new_team.put()
         new_team = new_team_key.get()
         new_team_key_id = new_team_key.id()
+        self.team_id = new_team_key_id
         user_key_name = "{}_{}".format(new_team_key_id, users.get_current_user().user_id())
         logging.info(user_key_name)
         new_team_user = User(id=user_key_name, user_name='hoge', team=new_team.key, role='primary_owner',
                              user=users.get_current_user())
         new_team_user.put()
+        self.user_id = user_key_name
 
     def tearDown(self):
         self.testbed.deactivate()
@@ -117,20 +119,22 @@ class ShortenHandlerTest(unittest.TestCase):
                                      follow_redirects=False)
         self.assertEqual(bad_response.status_code, 401)
         self.assertEqual(json.loads(bad_response.data)['errors'], 'bad request, should have team session data')
-        self.app.set_cookie('localhost', 'team', '1')
+        self.app.set_cookie('localhost', 'team', str(self.team_id))
         response = self.app.post('/func/shorten',
                                  data={'url': 'http://github.com', 'domain': 'jmpt.me'},
                                  follow_redirects=False)
         self.assertEqual(response.status_code, 200)
         short_urls = ShortURL.query().fetch(1000)
         self.assertEqual(short_urls[0].long_url, 'http://github.com')
+        self.assertEqual(short_urls[0].created_by, User.get_by_id(self.user_id).key)
+        self.assertEqual(short_urls[0].key.id().startswith('jmpt.me_'), True)
         bad_request = self.app.post('/func/shorten',
                                     data={'url': 'hoge.hage', 'domain': 'jmpt.me'},
                                     follow_redirects=False)
         self.assertEqual(json.loads(bad_request.data)['errors'], 'bad request, invalid form data')
 
     def testCustomeShortenPost(self):
-        self.app.set_cookie('localhost', 'team', '1')
+        self.app.set_cookie('localhost', 'team', str(self.team_id))
         response = self.app.post('/func/shorten',
                                  data={'url': 'https://github.com/yosukesuzuki/url-shortner', 'domain': 'jmpt.me',
                                        'custom_path': 'jmptme'},
