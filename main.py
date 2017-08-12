@@ -113,7 +113,7 @@ def signout(team_id):
     return response
 
 
-def generate_short_url_path(long_url):
+def generate_short_url_path(long_url):  # type: (str) -> str
     KEY_BASE = "0123456789abcdefghijklmnopqrstuvwxyz"
     BASE = 36
     short_url_id = ShortURLID(long_url=long_url).put()
