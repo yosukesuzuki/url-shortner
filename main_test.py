@@ -141,6 +141,7 @@ class ShortenHandlerTest(unittest.TestCase):
                                        'custom_path': 'jmptme'},
                                  follow_redirects=False)
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.data)['short_url'], 'jmpt.me/jmptme')
         short_urls = ShortURL.query().order(-ShortURL.created_at).fetch(1000)
         self.assertEqual(short_urls[0].key.id(), 'jmpt.me_jmptme')
         self.assertEqual(short_urls[0].team.id(), self.team_id)

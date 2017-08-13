@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>jmpt.me, URL Shortner </title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.4.3/css/bulma.min.css">
+    {% block header %}
+    {% endblock %}
     <style>
         .section {
             padding: 3rem 1.5rem;
@@ -30,5 +32,7 @@
         {% endblock %}
     </div>
 </section>
+{% block scripts %}
+{% endblock %}
 </body>
 </html>

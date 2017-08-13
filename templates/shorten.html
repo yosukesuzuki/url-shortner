@@ -1,17 +1,72 @@
 {% extends "base.html" %}
+{% block header %}
+    <script src="https://unpkg.com/vue"></script>
+{% endblock %}
 {% block nav %}
     {% include "nav_for_login.html" %}
 {% endblock %}
 {% block content %}
     <h1>shorten</h1>
-    <div class="columns">
+    <div class="columns" id="app">
         <div class="column is-two-thirds">
+            <div class="select">
+                <select v-model="domain">
+                    {% for d in domain_settings %}
+                        <option value="{{ d }}" {% if loop.index0 == 0 %}selected{% endif %}>{{ d }}</option>
+                    {% endfor %}
+                </select>
+            </div>
             <div class="field">
                 <label class="label">Url to shorten</label>
                 <div class="control">
-                    <textarea class="textarea" placeholder="Long URL"></textarea>
+                    <textarea class="textarea" placeholder="Long URL" v-model="long_url" @keyup.22="shorten"></textarea>
+                </div>
+            </div>
+            <div v-if="short_url !== ''">
+                <h2>result</h2>
+                <div class="tags has-addons">
+                    <span class="tag">{{ "{{" }}short_url{{ "}}" }}</span>
+                    <span class="tag is-primary">copy</span>
                 </div>
             </div>
         </div>
     </div>
+{% endblock %}
+{% block scripts %}
+    <script>
+        function isValidURL(str) {
+            var pattern = new RegExp('^(https?:\/\/)?' + // protocol
+                '((([a-z\d]([a-z\d-]*[a-z\d])*)\.)+[a-z]{2,}|' + // domain name
+                '((\d{1,3}\.){3}\d{1,3}))' + // OR ip (v4) address
+                '(\:\d+)?(\/[-a-z\d%_.~+]*)*' + // port and path
+                '(\?[;&a-z\d%_.~+=-]*)?' + // query string
+                '(\#[-a-z\d_]*)?$', 'i'); // fragment locater
+            if (!pattern.test(str)) {
+                alert("Please enter a valid URL.");
+                return false;
+            } else {
+                return true;
+            }
+        }
+        var app = new Vue({
+            el: '#app',
+            data: {
+                long_url: '',
+                domain: '{{ domain_settings[0] }}',
+                short_url: ''
+            },
+            methods: {
+                shorten: function (event) {
+                    if (isValidURL(this.long_url)) {
+                        this.$http.post('/func/shorten', {'url': this.long_url, 'domain': this.selected},
+                            function (data, status, request) {
+                                var result = JSON.parse(data);
+                                this.short_url = result.short_url;
+                            });
+                    }
+                }
+            }
+        });
+
+    </script>
 {% endblock %}

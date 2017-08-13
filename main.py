@@ -15,6 +15,7 @@
 # [START app]
 import logging
 from functools import wraps
+from urlparse import urlparse
 
 from flask import Flask, render_template, request, redirect, url_for, make_response, jsonify
 from forms import RegistrationForm, LongURLForm
@@ -45,6 +46,12 @@ def team_id_required(f):
     return decorated_function
 
 
+def strip_scheme(url):
+    parsed = urlparse(url)
+    scheme = "%s://" % parsed.scheme
+    return parsed.geturl().replace(scheme, '', 1).rstrip('/')
+
+
 @app.route('/')
 def index():
     team_id = request.cookies.get('team', False)
@@ -58,7 +65,8 @@ def index():
             return response
     if team_id and users.get_current_user():
         if validate_team_user(team_id, users.get_current_user().user_id()):
-            return render_template('shorten.html')
+            domain_settings = [strip_scheme(request.base_url)]
+            return render_template('shorten.html', domain_settings=domain_settings)
     return render_template('index.html')
 
 
