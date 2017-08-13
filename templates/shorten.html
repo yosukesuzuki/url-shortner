@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block header %}
     <script src="https://unpkg.com/vue"></script>
+    <script src="https://unpkg.com/vue-resource@1.3.4"></script>
 {% endblock %}
 {% block nav %}
     {% include "nav_for_login.html" %}
@@ -34,20 +35,6 @@
 {% endblock %}
 {% block scripts %}
     <script>
-        function isValidURL(str) {
-            var pattern = new RegExp('^(https?:\/\/)?' + // protocol
-                '((([a-z\d]([a-z\d-]*[a-z\d])*)\.)+[a-z]{2,}|' + // domain name
-                '((\d{1,3}\.){3}\d{1,3}))' + // OR ip (v4) address
-                '(\:\d+)?(\/[-a-z\d%_.~+]*)*' + // port and path
-                '(\?[;&a-z\d%_.~+=-]*)?' + // query string
-                '(\#[-a-z\d_]*)?$', 'i'); // fragment locater
-            if (!pattern.test(str)) {
-                alert("Please enter a valid URL.");
-                return false;
-            } else {
-                return true;
-            }
-        }
         var app = new Vue({
             el: '#app',
             data: {
@@ -55,15 +42,23 @@
                 domain: '{{ domain_settings[0] }}',
                 short_url: ''
             },
+            http:{
+                emulateJSON: true,
+                emulateHTTP: true
+            },
             methods: {
                 shorten: function (event) {
-                    if (isValidURL(this.long_url)) {
-                        this.$http.post('/func/shorten', {'url': this.long_url, 'domain': this.selected},
-                            function (data, status, request) {
-                                var result = JSON.parse(data);
-                                this.short_url = result.short_url;
-                            });
-                    }
+                    this.$http.emulateJSON = true;
+                    var requestData = {'url': this.long_url, 'domain': this.domain};
+                    this.$http.post('/func/shorten', requestData).then(
+                        response => {
+                            var result = response.body;
+                            this.short_url = result.short_url;
+                        }, response => {
+                            var result = response.body;
+                            this.short_url = result.errors;
+                        }
+                    );
                 }
             }
         });
