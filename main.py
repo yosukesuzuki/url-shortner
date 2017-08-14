@@ -65,7 +65,7 @@ def index():
             return response
     if team_id and users.get_current_user():
         if validate_team_user(team_id, users.get_current_user().user_id()):
-            domain_settings = [strip_scheme(request.base_url)]
+            domain_settings = ['jmpt.me', strip_scheme(request.base_url)]
             return render_template('shorten.html', domain_settings=domain_settings)
     return render_template('index.html')
 

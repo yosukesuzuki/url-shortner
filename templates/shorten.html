@@ -21,7 +21,7 @@
                     <textarea class="textarea" placeholder="Long URL" name="long_url" id="long_url"></textarea>
                 </div>
             </div>
-            <div style="visibility: hidden">
+            <div style="visibility: hidden" id="result">
                 <h2>result</h2>
                 <div class="tags has-addons">
                     <span class="tag" id="short_url"></span>
@@ -34,7 +34,7 @@
 {% block scripts %}
     <script>
         var pasteTarget = document.querySelector('#long_url');
-        pasteTarget.addEventListener('paste', function(e){
+        pasteTarget.addEventListener('paste', function (e) {
             var long_url = e.clipboardData.getData('Text');
             var domainElement = document.querySelector('#domain');
             var domain = domainElement.options[domainElement.selectedIndex].value;
@@ -44,13 +44,15 @@
                 headers: {
                     'Content-type': 'application/x-www-form-urlencoded; charset=UTF-8'
                 },
-                body: 'url='+encodeURI(long_url)+'&domain='+encodeURI(domain)
+                body: 'url=' + encodeURI(long_url) + '&domain=' + encodeURI(domain)
             })
-                .then(function(json){
-                    console.log(json)
+                .then(function (response) {
+                    return response.json();
                 })
                 .then(function (data) {
                     console.log('Request succeeded with JSON response', data);
+                    document.querySelector('#short_url').innerText = data.short_url;
+                    document.querySelector('#result').setAttribute('style', 'visibility: visible');
                 })
                 .catch(function (error) {
                     console.log('Request failed', error);
