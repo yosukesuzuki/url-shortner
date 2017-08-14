@@ -40,7 +40,7 @@ def team_id_required(f):
     def decorated_function(*args, **kwargs):
         team_id = request.cookies.get('team', False)
         if validate_team_user(team_id, users.get_current_user().user_id()) is False:
-            return make_response(jsonify({'errors': 'bad request, should have team session data'}), 401)
+            return make_response(jsonify({'errors': ['bad request, should have team session data']}), 401)
         return f(team_id, *args, **kwargs)
 
     return decorated_function
@@ -151,7 +151,12 @@ def shorten(team_id):
         short_url.put()
         result = {'short_url': "{}/{}".format(form.domain.data, path)}
         return jsonify(result)
-    return make_response(jsonify({'errors': 'bad request, invalid form data'}), 401)
+    errors = []
+    for field in form:
+        if len(field.errors) > 0:
+            for e in field.errors:
+                errors.append(e)
+    return make_response(jsonify({'errors': errors}), 400)
 
 
 @app.errorhandler(500)
