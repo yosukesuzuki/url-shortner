@@ -84,10 +84,7 @@ jobs:
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
               echo $GCLOUD_SERVICE_KEY_DEV | base64 --decode --ignore-garbage > ${HOME}/gcloud-service-key.json
-              sudo /opt/google-cloud-sdk/bin/gcloud --quiet components update
-              sudo /opt/google-cloud-sdk/bin/gcloud auth activate-service-account --key-file ${HOME}/gcloud-service-key.json
-              sudo /opt/google-cloud-sdk/bin/gcloud config set project $GCLOUD_PROJECT_DEV
-              sudo /opt/google-cloud-sdk/bin/gcloud app deploy app.yaml
+              ./google_appengine/appcfg.py update . -A $GCLOUD_PROJECT_DEV --authenticate_service_account ${HOME}/gcloud-service-key.json
             fi
 
 
