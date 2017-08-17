@@ -83,7 +83,7 @@ jobs:
           name: Deploy to dev environment
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              ${HOME}/google_appengine/appcfg.py update . -A $GCLOUD_PROJECT_DEV -V default --oauth2_refresh_token=$GCLOUD_SERVICE_KEY_DEV
+              ${HOME}/google_appengine/appcfg.py update . -A $GCLOUD_PROJECT_DEV --oauth2_refresh_token=$GCLOUD_SERVICE_KEY_DEV
             fi
 
 
