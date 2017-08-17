@@ -150,8 +150,8 @@ def shorten(team_id):
         key_name = "{}_{}".format(form.domain.data, path)
         ogp = opengraph.OpenGraph(url=form.url.data)
         short_url = ShortURL(id=key_name, long_url=form.url.data, team=user_entity.team, created_by=user_entity.key,
-                             title=ogp['title'], description=ogp['description'],
-                             site_name=ogp['site_name'], og_image=ogp['image']
+                             title=ogp.get('title', ''), description=ogp.get('description', ''),
+                             site_name=ogp.get('site_name', ''), og_image=ogp.get('image', '')
                              )
         short_url.put()
         result = {'short_url': "{}/{}".format(form.domain.data, path), 'title': short_url.title,
