@@ -22,6 +22,7 @@ from google.appengine.datastore import datastore_stub_util
 from google.appengine.ext import ndb
 from google.appengine.ext import testbed
 from main import app
+from mock import patch
 from models import User, Team, ShortURL
 
 
@@ -113,7 +114,11 @@ class ShortenHandlerTest(unittest.TestCase):
     def tearDown(self):
         self.testbed.deactivate()
 
-    def testShortenPost(self):
+    @patch('opengraph.OpenGraph')
+    def testShortenPost(self, OpenGraph):
+        OpenGraph.return_value = {'title': 'GitHub', 'description': 'GitHub is where people build software',
+                                  'site_name': 'GitHub',
+                                  'image': 'https://assets-cdn.github.com/images/modules/open_graph/github-logo.png'}
         bad_response = self.app.post('/func/shorten',
                                      data={'url': 'http://github.com', 'domain': 'jmpt.me'},
                                      follow_redirects=False)
@@ -129,6 +134,11 @@ class ShortenHandlerTest(unittest.TestCase):
         self.assertEqual(short_urls[0].created_by, User.get_by_id(self.user_id).key)
         self.assertEqual(short_urls[0].key.id().startswith('jmpt.me_'), True)
         self.assertEqual(short_urls[0].team.id(), self.team_id)
+        self.assertEqual(short_urls[0].title, 'GitHub')
+        self.assertEqual(short_urls[0].og_image,
+                         'https://assets-cdn.github.com/images/modules/open_graph/github-logo.png')
+        self.assertEqual(short_urls[0].site_name, 'GitHub')
+        self.assertEqual(short_urls[0].description, 'GitHub is where people build software')
         bad_request = self.app.post('/func/shorten',
                                     data={'url': 'hoge.hage', 'domain': 'jmpt.me'},
                                     follow_redirects=False)
@@ -140,7 +150,11 @@ class ShortenHandlerTest(unittest.TestCase):
         self.assertEqual(json.loads(bad_request_longdomain.data)['errors'],
                          ['Domain name should be between 1 and 25 characters'])
 
-    def testCustomeShortenPost(self):
+    @patch('opengraph.OpenGraph')
+    def testCustomeShortenPost(self, OpenGraph):
+        OpenGraph.return_value = {'title': 'GitHub', 'description': 'GitHub is where people build software',
+                                  'site_name': 'GitHub',
+                                  'image': 'https://assets-cdn.github.com/images/modules/open_graph/github-logo.png'}
         self.app.set_cookie('localhost', 'team', str(self.team_id))
         response = self.app.post('/func/shorten',
                                  data={'url': 'https://github.com/yosukesuzuki/url-shortner', 'domain': 'jmpt.me',

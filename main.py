@@ -17,6 +17,7 @@ import logging
 from functools import wraps
 from urlparse import urlparse
 
+import opengraph
 from flask import Flask, render_template, request, redirect, url_for, make_response, jsonify
 from forms import RegistrationForm, LongURLForm
 from google.appengine.api import users
@@ -147,9 +148,14 @@ def shorten(team_id):
         else:
             path = form.custom_path.data
         key_name = "{}_{}".format(form.domain.data, path)
-        short_url = ShortURL(id=key_name, long_url=form.url.data, team=user_entity.team, created_by=user_entity.key)
+        ogp = opengraph.OpenGraph(url=form.url.data)
+        short_url = ShortURL(id=key_name, long_url=form.url.data, team=user_entity.team, created_by=user_entity.key,
+                             title=ogp['title'], description=ogp['description'],
+                             site_name=ogp['site_name'], og_image=ogp['image']
+                             )
         short_url.put()
-        result = {'short_url': "{}/{}".format(form.domain.data, path)}
+        result = {'short_url': "{}/{}".format(form.domain.data, path), 'title': short_url.title,
+                  'og_image': short_url.og_image}
         return jsonify(result)
     errors = []
     for field in form:

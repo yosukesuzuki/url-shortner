@@ -55,7 +55,10 @@ class ShortURL(ndb.Model):
     custom_rule = ndb.JsonProperty()
     team = ndb.KeyProperty(required=True, kind=Team)
     created_by = ndb.KeyProperty(kind=User)
+    title = ndb.StringProperty()
+    site_name = ndb.StringProperty()
     description = ndb.TextProperty()
+    og_image = ndb.StringProperty()
     updated_at = ndb.DateTimeProperty(auto_now=True)
     created_at = ndb.DateTimeProperty(auto_now_add=True)
 
