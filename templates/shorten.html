@@ -21,14 +21,30 @@
                 <div class="control">
                     <textarea class="textarea" placeholder="Long URL" name="long_url" id="long_url"></textarea>
                     <p class="help is-danger" id="shorten-error-message"></p>
+                    <a class="button is-small" id="submit-shorten">Shorten</a>
                 </div>
             </div>
             <div style="visibility: hidden" id="result">
                 <h2>result</h2>
                 <div class="tags has-addons">
                     <span class="tag" id="short_url"></span>
-                    <span class="tag is-primary">copy</span>
+                    <span class="tag is-primary" id="copy-short_url">copy</span>
                 </div>
+                <article class="media" style="visibility: hidden" id="result-card">
+                    <figure class="media-left">
+                        <p class="image is-64x64">
+                            <img src="http://bulma.io/images/placeholders/128x128.png" id="result-image">
+                        </p>
+                    </figure>
+                    <div class="media-content">
+                        <div class="content">
+                            <p>
+                                <strong id="result-title"></strong>
+                                <br>
+                                <span id="result-description"></span>
+                            </p>
+                        </div>
+                </article>
             </div>
         </div>
     </div>
@@ -36,22 +52,76 @@
 {% block scripts %}
     <script>
         var pasteTarget = document.querySelector('#long_url');
-        pasteTarget.addEventListener('paste', function (e) {
+        pasteTarget.addEventListener('paste', shortenClipboard, false);
+        var shortnButtonTarget = document.querySelector('#submit-shorten');
+        shortnButtonTarget.addEventListener('click', shortenButton, false);
+        var copyButtonTarget = document.querySelector('#copy-short_url');
+        copyButtonTarget.addEventListener('click', copyShortUrl, false);
+        function shortenButton() {
+            var long_url = document.querySelector('#long_url').value;
+            shorten(long_url);
+        }
+
+        function shortenClipboard(e) {
             var long_url = e.clipboardData.getData('Text');
+            shorten(long_url);
+        }
+
+        function shorten(long_url) {
             var domainElement = document.querySelector('#domain');
             var domain = domainElement.options[domainElement.selectedIndex].value;
             axios.post('/api/v1/shorten', {'domain': domain, 'url': long_url})
-            .then(function (response) {
-                console.log('Request succeeded with JSON response', response);
-                document.querySelector('#shorten-error-message').innerText = '';
-                document.querySelector('#short_url').innerText = response.data.short_url;
-                document.querySelector('#result').setAttribute('style', 'visibility: visible');
-            })
-            .catch(function (error) {
-                console.log(error);
-                document.querySelector('#shorten-error-message').innerText = error.response.data.errors.join();
-            });
-        }, false);
+                .then(function (response) {
+                    console.log('Request succeeded with JSON response', response);
+                    document.querySelector('#shorten-error-message').innerText = '';
+                    document.querySelector('#short_url').innerText = response.data.short_url;
+                    document.querySelector('#result').setAttribute('style', 'visibility: visible');
+                    if (response.data.warning !== null) {
+                        document.querySelector('#shorten-error-message').innerText = response.data.warning;
+                        document.querySelector('#result-card').setAttribute('style', 'visibility: hidden');
+                    } else {
+                        document.querySelector('#result-title').innerText = response.data.title;
+                        document.querySelector('#result-description').innerText = response.data.description;
+                        document.querySelector('#result-image').setAttribute('src', response.data.image);
+                        document.querySelector('#result-card').setAttribute('style', 'visibility: visible');
+                    }
+                })
+                .catch(function (error) {
+                    console.log(error);
+                    document.querySelector('#shorten-error-message').innerText = error.response.data.errors.join();
+                });
+        }
 
+        function copyShortUrl() {
+            var short_url = document.querySelector('#short_url').innerText;
+            copyToClipboard(short_url);
+        }
+
+        // from http://www.jomendez.com/2017/01/25/copy-clipboard-using-javascript/
+        function copyToClipboard(text) {
+
+            if (window.clipboardData && window.clipboardData.setData) {
+                // IE specific code path to prevent textarea being shown while dialog is visible.
+
+                return clipboardData.setData("Text", text);
+
+            }
+
+            else if (document.queryCommandSupported && document.queryCommandSupported("copy")) {
+                var textarea = document.createElement("textarea");
+                textarea.textContent = text;
+                textarea.style.position = "fixed";  // Prevent scrolling to bottom of page in MS Edge.
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    return document.execCommand("copy"); // Security exception may be thrown by some browsers.
+                } catch (ex) {
+                    console.warn("Copy to clipboard failed.", ex);
+                    return false;
+                } finally {
+                    document.body.removeChild(textarea);
+                }
+            }
+        }
     </script>
 {% endblock %}

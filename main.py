@@ -15,6 +15,7 @@
 # [START app]
 import logging
 from functools import wraps
+from urllib2 import HTTPError
 from urlparse import urlparse
 
 import opengraph
@@ -150,14 +151,20 @@ def shorten(team_id):
         else:
             path = form.custom_path.data
         key_name = "{}_{}".format(form.domain.data, path)
-        ogp = opengraph.OpenGraph(url=form.url.data)
+        try:
+            ogp = opengraph.OpenGraph(url=form.url.data)
+            warning = None
+        except HTTPError:
+            ogp = {'title': '', 'description': '', 'site_name': '', 'image': ''}
+            warning = 'cannot look up URL, is this right URL?'
         short_url = ShortURL(id=key_name, long_url=form.url.data, team=user_entity.team, created_by=user_entity.key,
                              title=ogp.get('title', ''), description=ogp.get('description', ''),
                              site_name=ogp.get('site_name', ''), og_image=ogp.get('image', '')
                              )
         short_url.put()
         result = {'short_url': "{}/{}".format(form.domain.data, path), 'title': short_url.title,
-                  'og_image': short_url.og_image}
+                  'description': short_url.description,
+                  'image': short_url.og_image, 'warning': warning}
         return jsonify(result)
     errors = []
     for field in form:

@@ -137,7 +137,7 @@ class ShortenHandlerTest(unittest.TestCase):
         self.assertEqual(short_urls[0].key.id().startswith('jmpt.me_'), True)
         self.assertEqual(short_urls[0].team.id(), self.team_id)
         self.assertEqual(short_urls[0].title, 'GitHub')
-        self.assertEqual(short_urls[0].og_image,
+        self.assertEqual(short_urls[0].image,
                          'https://assets-cdn.github.com/images/modules/open_graph/github-logo.png')
         self.assertEqual(short_urls[0].site_name, 'GitHub')
         self.assertEqual(short_urls[0].description, 'GitHub is where people build software')
