@@ -22,13 +22,18 @@
                     <textarea class="textarea" placeholder="Long URL" name="long_url" id="long_url"></textarea>
                     <p class="help is-danger" id="shorten-error-message"></p>
                     <a class="button is-small" id="submit-shorten">Shorten</a>
+                    <div class="spinner" style="visibility: hidden">
+                        <div class="bounce1"></div>
+                        <div class="bounce2"></div>
+                        <div class="bounce3"></div>
+                    </div>
                 </div>
             </div>
             <div style="visibility: hidden" id="result">
                 <h2>result</h2>
                 <div class="tags has-addons">
                     <span class="tag" id="short_url"></span>
-                    <span class="tag is-primary" id="copy-short_url">copy</span>
+                    <span class="tag is-primary" id="copy-short_url">copy</span><span class="copy-status">&nbsp;</span>
                 </div>
                 <article class="media" style="visibility: hidden" id="result-card">
                     <figure class="media-left">
@@ -44,6 +49,7 @@
                                 <span id="result-description"></span>
                             </p>
                         </div>
+                    </div>
                 </article>
             </div>
         </div>
@@ -70,6 +76,7 @@
         function shorten(long_url) {
             var domainElement = document.querySelector('#domain');
             var domain = domainElement.options[domainElement.selectedIndex].value;
+            document.querySelector('div.spinner').setAttribute('style', 'visibility: visible');
             axios.post('/api/v1/shorten', {'domain': domain, 'url': long_url})
                 .then(function (response) {
                     console.log('Request succeeded with JSON response', response);
@@ -85,16 +92,22 @@
                         document.querySelector('#result-image').setAttribute('src', response.data.image);
                         document.querySelector('#result-card').setAttribute('style', 'visibility: visible');
                     }
+                    document.querySelector('div.spinner').setAttribute('style', 'visibility: hidden');
                 })
                 .catch(function (error) {
                     console.log(error);
                     document.querySelector('#shorten-error-message').innerText = error.response.data.errors.join();
+                    document.querySelector('div.spinner').setAttribute('style', 'visibility: hidden');
                 });
         }
 
         function copyShortUrl() {
             var short_url = document.querySelector('#short_url').innerText;
-            copyToClipboard(short_url);
+            var copyResult = copyToClipboard(short_url);
+            if(copyResult){
+                document.querySelector('span.copy-status').innerHTML = '&#10004;';
+                setTimeout(function(){ document.querySelector('span.copy-status').innerHTML = '&nbsp;'; }, 10000);
+            }
         }
 
         // from http://www.jomendez.com/2017/01/25/copy-clipboard-using-javascript/
