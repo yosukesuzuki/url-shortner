@@ -18,12 +18,14 @@ from functools import wraps
 from urlparse import urlparse
 
 import opengraph
+import wtforms_json
 from flask import Flask, render_template, request, redirect, url_for, make_response, jsonify
 from forms import RegistrationForm, LongURLForm
 from google.appengine.api import users
 from google.appengine.ext import ndb
 from models import Team, User, ShortURL, ShortURLID
 
+wtforms_json.init()
 app = Flask(__name__)
 
 
@@ -136,14 +138,14 @@ def generate_short_url_path(long_url):  # type: (str) -> str
     return "".join(s)
 
 
-@app.route('/func/shorten', methods=['POST'])
+@app.route('/api/v1/shorten', methods=['POST'])
 @team_id_required
 def shorten(team_id):
     user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
     user_entity = User.get_by_id(user_key_name)
-    form = LongURLForm(request.form)
+    form = LongURLForm.from_json(request.get_json())
     if form.validate():
-        if len(form.custom_path.data) == 0:
+        if form.custom_path.data is None or (form.custom_path.data) == 0:
             path = generate_short_url_path(form.url.data)
         else:
             path = form.custom_path.data

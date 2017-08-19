@@ -33,7 +33,7 @@ class LongURLForm(Form):
             raise ValidationError(message='Invalid domain name')
 
     def validate_custom_path(form, field):
-        if len(field.data) > 0 and re.match(ur'^[a-z0-9]*$', field.data) is None:
+        if field.data is not None and (field.data) > 0 and re.match(ur'^[a-z0-9]*$', field.data) is None:
             raise ValidationError(message='Invalid custom path name, should be lower case alphabet and number')
         key_name = "{}_{}".format(form.domain.data, field.data)
         short_url = ShortURL.get_by_id(key_name)

@@ -119,14 +119,16 @@ class ShortenHandlerTest(unittest.TestCase):
         OpenGraph.return_value = {'title': 'GitHub', 'description': 'GitHub is where people build software',
                                   'site_name': 'GitHub',
                                   'image': 'https://assets-cdn.github.com/images/modules/open_graph/github-logo.png'}
-        bad_response = self.app.post('/func/shorten',
-                                     data={'url': 'http://github.com', 'domain': 'jmpt.me'},
+        bad_response = self.app.post('/api/v1/shorten',
+                                     data=json.dumps({'url': 'http://github.com', 'domain': 'jmpt.me'}),
+                                     content_type='application/json',
                                      follow_redirects=False)
         self.assertEqual(bad_response.status_code, 401)
         self.assertEqual(json.loads(bad_response.data)['errors'], ['bad request, should have team session data'])
         self.app.set_cookie('localhost', 'team', str(self.team_id))
-        response = self.app.post('/func/shorten',
-                                 data={'url': 'http://github.com', 'domain': 'jmpt.me'},
+        response = self.app.post('/api/v1/shorten',
+                                 data=json.dumps({'url': 'http://github.com', 'domain': 'jmpt.me'}),
+                                 content_type='application/json',
                                  follow_redirects=False)
         self.assertEqual(response.status_code, 200)
         short_urls = ShortURL.query().fetch(1000)
@@ -139,13 +141,15 @@ class ShortenHandlerTest(unittest.TestCase):
                          'https://assets-cdn.github.com/images/modules/open_graph/github-logo.png')
         self.assertEqual(short_urls[0].site_name, 'GitHub')
         self.assertEqual(short_urls[0].description, 'GitHub is where people build software')
-        bad_request = self.app.post('/func/shorten',
-                                    data={'url': 'hoge.hage', 'domain': 'jmpt.me'},
+        bad_request = self.app.post('/api/v1/shorten',
+                                    data=json.dumps({'url': 'hoge.hage', 'domain': 'jmpt.me'}),
+                                    content_type='application/json',
                                     follow_redirects=False)
         self.assertEqual(json.loads(bad_request.data)['errors'], ['String posted was not valid URL'])
-        bad_request_longdomain = self.app.post('/func/shorten',
-                                               data={'url': 'https://github.com',
-                                                     'domain': 'jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjmpt.me'},
+        bad_request_longdomain = self.app.post('/api/v1/shorten',
+                                               data=json.dumps({'url': 'https://github.com',
+                                                                'domain': 'jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjmpt.me'}),
+                                               content_type='application/json',
                                                follow_redirects=False)
         self.assertEqual(json.loads(bad_request_longdomain.data)['errors'],
                          ['Domain name should be between 1 and 25 characters'])
@@ -156,34 +160,40 @@ class ShortenHandlerTest(unittest.TestCase):
                                   'site_name': 'GitHub',
                                   'image': 'https://assets-cdn.github.com/images/modules/open_graph/github-logo.png'}
         self.app.set_cookie('localhost', 'team', str(self.team_id))
-        response = self.app.post('/func/shorten',
-                                 data={'url': 'https://github.com/yosukesuzuki/url-shortner', 'domain': 'jmpt.me',
-                                       'custom_path': 'jmptme'},
+        response = self.app.post('/api/v1/shorten',
+                                 data=json.dumps(
+                                     {'url': 'https://github.com/yosukesuzuki/url-shortner', 'domain': 'jmpt.me',
+                                      'custom_path': 'jmptme'}),
+                                 content_type='application/json',
                                  follow_redirects=False)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.data)['short_url'], 'jmpt.me/jmptme')
         short_urls = ShortURL.query().order(-ShortURL.created_at).fetch(1000)
         self.assertEqual(short_urls[0].key.id(), 'jmpt.me_jmptme')
         self.assertEqual(short_urls[0].team.id(), self.team_id)
-        bad_response = self.app.post('/func/shorten',
-                                     data={'url': 'https://github.com/yosukesuzuki/url-shortner', 'domain': 'hoge.hoge',
-                                           'custom_path': 'HOGE'},
+        bad_response = self.app.post('/api/v1/shorten',
+                                     data=json.dumps(
+                                         {'url': 'https://github.com/yosukesuzuki/url-shortner', 'domain': 'hoge.hoge',
+                                          'custom_path': 'HOGE'}),
+                                     content_type='application/json',
                                      follow_redirects=False)
         self.assertEqual(bad_response.status_code, 400)
         self.assertEqual(json.loads(bad_response.data)['errors'],
                          ['Invalid custom path name, should be lower case alphabet and number'])
-        bad_response_domain = self.app.post('/func/shorten',
-                                            data={'url': 'https://github.com/yosukesuzuki/url-shortner',
-                                                  'domain': 'hoge.1',
-                                                  'custom_path': 'hoge'},
+        bad_response_domain = self.app.post('/api/v1/shorten',
+                                            data=json.dumps({'url': 'https://github.com/yosukesuzuki/url-shortner',
+                                                             'domain': 'hoge.1',
+                                                             'custom_path': 'hoge'}),
+                                            content_type='application/json',
                                             follow_redirects=False)
         self.assertEqual(bad_response_domain.status_code, 400)
         self.assertEqual(json.loads(bad_response_domain.data)['errors'],
                          ['Invalid domain name'])
-        bad_response_duplication = self.app.post('/func/shorten',
-                                                 data={'url': 'https://github.com/yosukesuzuki/url-shortner',
-                                                       'domain': 'jmpt.me',
-                                                       'custom_path': 'jmptme'},
+        bad_response_duplication = self.app.post('/api/v1/shorten',
+                                                 data=json.dumps({'url': 'https://github.com/yosukesuzuki/url-shortner',
+                                                                  'domain': 'jmpt.me',
+                                                                  'custom_path': 'jmptme'}),
+                                                 content_type='application/json',
                                                  follow_redirects=False)
         self.assertEqual(bad_response_duplication.status_code, 400)
         self.assertEqual(json.loads(bad_response_duplication.data)['errors'],

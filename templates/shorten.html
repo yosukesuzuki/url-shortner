@@ -35,16 +35,12 @@
 {% endblock %}
 {% block scripts %}
     <script>
-        axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
         var pasteTarget = document.querySelector('#long_url');
         pasteTarget.addEventListener('paste', function (e) {
             var long_url = e.clipboardData.getData('Text');
             var domainElement = document.querySelector('#domain');
             var domain = domainElement.options[domainElement.selectedIndex].value;
-            var params = new URLSearchParams();
-            params.append('url', long_url);
-            params.append('domain', domain)
-            axios.post('/func/shorten', params)
+            axios.post('/api/v1/shorten', {'domain': domain, 'url': long_url})
             .then(function (response) {
                 console.log('Request succeeded with JSON response', response);
                 document.querySelector('#shorten-error-message').innerText = '';
