@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block nav %}
+    {% include "nav_for_nonlogin.html" %}
+{% endblock %}
+{% block content %}
+    Please choose your team
+
+    <div class="columns" id="app">
+        <div class="column is-two-thirds">
+            <nav class="panel">
+                <p class="panel-heading">
+                    teams
+                </p>
+            {% for t in teams %}
+                <div class="panel-block">
+                <a href="/?team={{ t.key.id() }}">
+                    <span>{{ t.team_name }}</span>
+                </a>
+                </div>
+            {% endfor %}
+            </nav>
+        </div>
+    </div>
+{% endblock %}

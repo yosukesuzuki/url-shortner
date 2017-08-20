@@ -62,9 +62,10 @@ def index():
     team_setting_id = request.args.get('team', False)
     if team_id is False and team_setting_id is False:
         return render_template('index.html')
+    domain_settings = ['jmpt.me', strip_scheme(request.base_url)]
     if team_id is False and team_setting_id:
         if validate_team_user(team_setting_id, users.get_current_user().user_id()):
-            response = make_response(render_template('shorten.html'))
+            response = make_response(render_template('shorten.html', domain_settings=domain_settings))
             response.set_cookie('team', value=team_setting_id)
             return response
     if team_id and users.get_current_user():
@@ -102,7 +103,7 @@ def register():
     return render_template('register.html', google_account=google_account, form=form)
 
 
-@app.route('/func/signin', methods=['GET'])
+@app.route('/page/signin', methods=['GET'])
 def signin():
     response = make_response(redirect(url_for('index')))
     q = User.query()
@@ -113,10 +114,15 @@ def signin():
         if validate_team_user(team_id, users.get_current_user().user_id()):
             logging.info('set cookie, {}'.format(team_id))
             response.set_cookie('team', value=team_id)
+        return response
+    elif len(result) > 1:
+        team_keys = [r.team for r in result]
+        teams = ndb.get_multi(team_keys)
+        return render_template('signin.html', teams=teams)
     return response
 
 
-@app.route('/func/signout', methods=['GET'])
+@app.route('/page/signout', methods=['GET'])
 @team_id_required
 def signout(team_id):
     response = make_response(redirect(url_for('index')))
