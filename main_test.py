@@ -198,3 +198,55 @@ class ShortenHandlerTest(unittest.TestCase):
         self.assertEqual(bad_response_duplication.status_code, 400)
         self.assertEqual(json.loads(bad_response_duplication.data)['errors'],
                          ['The short URL path exists already'])
+
+
+class ShortURLAPITest(unittest.TestCase):
+    def setUp(self):
+        self.policy = datastore_stub_util.PseudoRandomHRConsistencyPolicy(probability=1)
+        self.testbed = testbed.Testbed()
+        self.testbed.activate()
+        self.testbed.init_datastore_v3_stub(consistency_policy=self.policy)
+        self.testbed.init_memcache_stub()
+        self.testbed.setup_env(
+            user_email='example@example.com',
+            user_id='1234567890',
+            user_is_admin='1',
+            overwrite=True)
+        self.app = app.test_client()
+        ndb.get_context().clear_cache()
+        new_team = Team(team_name='hoge', billing_plan='trial',
+                        team_domain='ysk')
+        new_team_key = new_team.put()
+        self.team_key = new_team_key
+        new_team = new_team_key.get()
+        new_team_key_id = new_team_key.id()
+        self.team_id = new_team_key_id
+        user_key_name = "{}_{}".format(new_team_key_id, users.get_current_user().user_id())
+        logging.info(user_key_name)
+        new_team_user = User(id=user_key_name, user_name='hoge', team=new_team.key, role='primary_owner',
+                             user=users.get_current_user())
+        new_team_user_key = new_team_user.put()
+        self.user_key = new_team_user_key
+        self.user_id = user_key_name
+
+    def tearDown(self):
+        self.testbed.deactivate()
+
+    def testGet(self):
+        ShortURL(id='jmpt.me_01', long_url='https://github.com', short_url='jmpt.me/01',
+                 team=self.team_key, created_by=self.user_key,
+                 title='test title', description='test description',
+                 site_name='test site', image='').put()
+        ShortURL(id='jmpt.me_02', long_url='https://github.com', short_url='jmpt.me/02',
+                 team=self.team_key, created_by=self.user_key,
+                 title='test title', description='test description',
+                 site_name='test site', image='').put()
+        bad_response = self.app.get('/api/v1/short_urls',
+                                    follow_redirects=False)
+        self.assertEqual(bad_response.status_code, 401)
+        self.assertEqual(json.loads(bad_response.data)['errors'], ['bad request, should have team session data'])
+        self.app.set_cookie('localhost', 'team', str(self.team_id))
+        response = self.app.get('/api/v1/short_urls',
+                                follow_redirects=False)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.data)['results'][0]['short_url'], 'jmpt.me/01')

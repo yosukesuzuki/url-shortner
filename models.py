@@ -51,7 +51,8 @@ class ShortURL(ndb.Model):
     key_name == domain name + "_" + short url path
 
     """
-    long_url = ndb.StringProperty()
+    long_url = ndb.StringProperty(required=True)
+    short_url = ndb.StringProperty(required=True)
     custom_rule = ndb.JsonProperty()
     team = ndb.KeyProperty(required=True, kind=Team)
     created_by = ndb.KeyProperty(kind=User)

@@ -163,12 +163,14 @@ def shorten(team_id):
         except HTTPError:
             ogp = {'title': '', 'description': '', 'site_name': '', 'image': ''}
             warning = 'cannot look up URL, is this right URL?'
-        short_url = ShortURL(id=key_name, long_url=form.url.data, team=user_entity.team, created_by=user_entity.key,
+        short_url_string = "{}/{}".format(form.domain.data, path)
+        short_url = ShortURL(id=key_name, long_url=form.url.data, short_url=short_url_string,
+                             team=user_entity.team, created_by=user_entity.key,
                              title=ogp.get('title', ''), description=ogp.get('description', ''),
                              site_name=ogp.get('site_name', ''), image=ogp.get('image', '')
                              )
         short_url.put()
-        result = {'short_url': "{}/{}".format(form.domain.data, path), 'title': short_url.title,
+        result = {'short_url': short_url_string, 'title': short_url.title,
                   'description': short_url.description,
                   'image': short_url.image, 'warning': warning}
         return jsonify(result)
@@ -178,6 +180,22 @@ def shorten(team_id):
             for e in field.errors:
                 errors.append(e)
     return make_response(jsonify({'errors': errors}), 400)
+
+
+@app.route('/api/v1/short_urls', methods=['GET'])
+@team_id_required
+def shorten_urls(team_id):
+    user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
+    user_entity = User.get_by_id(user_key_name)
+    q = ShortURL.query()
+    q = q.filter(ShortURL.team == user_entity.team)
+    q.order(-ShortURL.created_at)
+    entities = q.fetch(1000)
+    results = [{'short_url': e.short_url,
+                'title': e.title,
+                'long_url': e.long_url,
+                'created_at': e.created_at.strftime('%Y-%m-%d %H:%M:%S%Z')} for e in entities]
+    return jsonify({'results': results})
 
 
 @app.errorhandler(500)
