@@ -54,6 +54,11 @@
             </div>
         </div>
     </div>
+    <div class="columns">
+        <div class="column is-three-quarters" id="short_urls">
+
+        </div>
+    </div>
 {% endblock %}
 {% block scripts %}
     <script>
@@ -63,6 +68,7 @@
         shortnButtonTarget.addEventListener('click', shortenButton, false);
         var copyButtonTarget = document.querySelector('#copy-short_url');
         copyButtonTarget.addEventListener('click', copyShortUrl, false);
+
         function shortenButton() {
             var long_url = document.querySelector('#long_url').value;
             shorten(long_url);
@@ -104,9 +110,11 @@
         function copyShortUrl() {
             var short_url = document.querySelector('#short_url').innerText;
             var copyResult = copyToClipboard(short_url);
-            if(copyResult){
+            if (copyResult) {
                 document.querySelector('span.copy-status').innerHTML = '&#10004;';
-                setTimeout(function(){ document.querySelector('span.copy-status').innerHTML = '&nbsp;'; }, 10000);
+                setTimeout(function () {
+                    document.querySelector('span.copy-status').innerHTML = '&nbsp;';
+                }, 10000);
             }
         }
 
@@ -136,5 +144,42 @@
                 }
             }
         }
+        var mediaObjTemplate = `
+        <div class="box">
+          <article class="media">
+            <div class="media-left">
+              <figure class="image is-64x64">
+                <img src="@@image" alt="Image"></a>
+              </figure>
+            </div>
+            <div class="media-content">
+              <div class="content">
+                <p>
+                  <a href="@@long_url"><strong>@@title</strong></a>
+                  <br>
+                  @@description
+                </p>
+              </div>
+            </div>
+          </article>
+        </div>
+        `
+
+        axios.get('/api/v1/short_urls')
+            .then(function (response) {
+                var resultsHTML = "<h2>Your short urls</h2>";
+                response.data.results.forEach(function(val,index) {
+                    resultsHTML += mediaObjTemplate.replace('@@image', val.image)
+                        .replace('@@title', val.title)
+                        .replace('@@short_url', val.short_url)
+                        .replace('@@long_url', val.long_url)
+                        .replace('@@description', val.description);
+                });
+                document.querySelector('#short_urls').innerHTML = resultsHTML;
+            })
+            .catch(function (error) {
+                console.log(error);
+                document.querySelector('#short_urls').innerHTML = error.response.data.errors.join();
+            });
     </script>
 {% endblock %}
