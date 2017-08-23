@@ -188,8 +188,7 @@ def shorten_urls(team_id):
     user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
     user_entity = User.get_by_id(user_key_name)
     q = ShortURL.query()
-    q = q.filter(ShortURL.team == user_entity.team)
-    q.order(-ShortURL.created_at)
+    q = q.filter(ShortURL.team == user_entity.team).order(-ShortURL.created_at)
     entities = q.fetch(1000)
     results = [{'short_url': e.short_url,
                 'title': e.title,
