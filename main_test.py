@@ -249,4 +249,4 @@ class ShortURLAPITest(unittest.TestCase):
         response = self.app.get('/api/v1/short_urls',
                                 follow_redirects=False)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(json.loads(response.data)['results'][0]['short_url'], 'jmpt.me/01')
+        self.assertEqual(json.loads(response.data)['results'][0]['short_url'], 'jmpt.me/02')
