@@ -88,7 +88,9 @@
                 .then(function (response) {
                     console.log('Request succeeded with JSON response', response);
                     document.querySelector('#shorten-error-message').innerText = '';
-                    document.querySelector('#short_url').innerText = response.data.short_url;
+                    document.querySelector('#short_url').innerHTML =
+                        '<span class="domain">' + response.data.short_url.split('/')[0] + '</span>'
+                        + '/<span class="path">' + response.data.short_url.split('/')[1] + '</span>';
                     document.querySelector('#result').setAttribute('style', 'visibility: visible');
                     if (response.data.warning !== null) {
                         document.querySelector('#shorten-error-message').innerText = response.data.warning;
@@ -145,6 +147,7 @@
                 }
             }
         }
+
         var mediaObjTemplate = `
         <div class="box">
           <article class="media">
@@ -156,7 +159,8 @@
             <div class="media-content">
               <div class="content">
                 <p>
-                  <a href="@@long_url"><strong>@@short_url</strong></a><span class="edit">&nbsp;✏&nbsp;</span>️ <small>@@title</small>
+                  <a href="@@long_url"><strong><span class="domain">@@short_url_domain</span>/<span class="path">@@short_url_path</span></strong></a>
+                  <span class="edit">&nbsp;✏&nbsp;</span>️ <small>@@title</small>
                   <br>
                   @@description
                 </p>
@@ -169,10 +173,13 @@
         axios.get('/api/v1/short_urls')
             .then(function (response) {
                 var resultsHTML = "<h2>Your short urls</h2>";
-                response.data.results.forEach(function(val,index) {
+                response.data.results.forEach(function (val, index) {
+                    var shortURLDomain = val.short_url !== null ? val.short_url.split('/')[0] : "";
+                    var shortURLPath = val.short_url !== null ? val.short_url.split('/')[1] : "";
                     resultsHTML += mediaObjTemplate.replace('@@image', val.image)
                         .replace('@@title', val.title)
-                        .replace('@@short_url', val.short_url)
+                        .replace('@@short_url_domain', shortURLDomain)
+                        .replace('@@short_url_path', shortURLPath)
                         .replace('@@long_url', val.long_url)
                         .replace('@@description', val.description);
                 });
