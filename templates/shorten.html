@@ -32,8 +32,8 @@
             <div style="visibility: hidden" id="result">
                 <h2>result</h2>
                 <div class="tags has-addons">
-                    <span class="tag" id="short_url"></span>
-                    <span class="edit">&nbsp;✏&nbsp;</span>
+                    <span class="tag is-medium" id="short_url"></span>
+
                     <span class="tag is-primary" id="copy-short_url">copy</span><span class="copy-status">&nbsp;</span>
                 </div>
                 <article class="media" style="visibility: hidden" id="result-card">
@@ -90,7 +90,7 @@
                     document.querySelector('#shorten-error-message').innerText = '';
                     document.querySelector('#short_url').innerHTML =
                         '<span class="domain">' + response.data.short_url.split('/')[0] + '</span>'
-                        + '/<span class="path">' + response.data.short_url.split('/')[1] + '</span>';
+                        + '/<span class="path">' + response.data.short_url.split('/')[1] + '&nbsp;✏&nbsp;</span>';
                     document.querySelector('#result').setAttribute('style', 'visibility: visible');
                     if (response.data.warning !== null) {
                         document.querySelector('#shorten-error-message').innerText = response.data.warning;
@@ -159,8 +159,8 @@
             <div class="media-content">
               <div class="content">
                 <p>
-                  <a href="@@long_url"><strong><span class="domain">@@short_url_domain</span>/<span class="path">@@short_url_path</span></strong></a>
-                  <span class="edit">&nbsp;✏&nbsp;</span>️ <small>@@title</small>
+                  <a href="@@long_url"><strong><span class="domain">@@short_url_domain</span>/<span class="path">@@short_url_path&nbsp;✏&nbsp;</span></strong></a>
+                  <small>@@title</small>
                   <br>
                   @@description
                 </p>
