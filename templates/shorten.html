@@ -69,15 +69,19 @@
         shortnButtonTarget.addEventListener('click', shortenButton, false);
         var copyButtonTarget = document.querySelector('#copy-short_url');
         copyButtonTarget.addEventListener('click', copyShortUrl, false);
-
+        function editShortURL(event) {
+            event.preventDefault();
+            this.focus();
+            console.log(this);
+        }
         function shortenButton() {
-            var long_url = document.querySelector('#long_url').value;
-            shorten(long_url);
+            var longURL = document.querySelector('#long_url').value;
+            shorten(longURL);
         }
 
         function shortenClipboard(e) {
-            var long_url = e.clipboardData.getData('Text');
-            shorten(long_url);
+            var longURL = e.clipboardData.getData('Text');
+            shorten(longURL);
         }
 
         function shorten(long_url) {
@@ -90,7 +94,7 @@
                     document.querySelector('#shorten-error-message').innerText = '';
                     document.querySelector('#short_url').innerHTML =
                         '<span class="domain">' + response.data.short_url.split('/')[0] + '</span>'
-                        + '/<span class="path">' + response.data.short_url.split('/')[1] + '&nbsp;✏&nbsp;</span>';
+                        + '/<span class="path" contentEditable="true">' + response.data.short_url.split('/')[1] + '</span><span>&nbsp;✏&nbsp;</span>';
                     document.querySelector('#result').setAttribute('style', 'visibility: visible');
                     if (response.data.warning !== null) {
                         document.querySelector('#shorten-error-message').innerText = response.data.warning;
@@ -159,7 +163,7 @@
             <div class="media-content">
               <div class="content">
                 <p>
-                  <a href="@@long_url"><strong><span class="domain">@@short_url_domain</span>/<span class="path">@@short_url_path&nbsp;✏&nbsp;</span></strong></a>
+                  <a href="@@long_url"><strong><span class="domain">@@short_url_domain</span>/<span class="path" contentEditable="true">@@short_url_path</span><span>&nbsp;✏&nbsp;</span></strong></a>
                   <small>@@title</small>
                   <br>
                   @@description
@@ -184,6 +188,9 @@
                         .replace('@@description', val.description);
                 });
                 document.querySelector('#short_urls').innerHTML = resultsHTML;
+                document.querySelectorAll('span.path').forEach(function (element) {
+                    element.addEventListener('click', editShortURL, false);
+                });
             })
             .catch(function (error) {
                 console.log(error);
