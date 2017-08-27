@@ -72,7 +72,6 @@
         function editShortURL(event) {
             event.preventDefault();
             this.focus();
-            console.log(this);
         }
         function shortenButton() {
             var longURL = document.querySelector('#long_url').value;
@@ -83,18 +82,24 @@
             var longURL = e.clipboardData.getData('Text');
             shorten(longURL);
         }
+        function postShortURL(element){
+            var longURL = element.closest('a').href;
+            var domain = element.previousElementSibling.innerText;
+            var customPath = element.innerText;
+        }
 
-        function shorten(long_url) {
+        function shorten(long_url, custom_path = false) {
             var domainElement = document.querySelector('#domain');
             var domain = domainElement.options[domainElement.selectedIndex].value;
             document.querySelector('div.spinner').setAttribute('style', 'visibility: visible');
-            axios.post('/api/v1/shorten', {'domain': domain, 'url': long_url})
+            axios.post('/api/v1/shorten', {'domain': domain, 'url': long_url, 'custom_path': custom_path})
                 .then(function (response) {
                     console.log('Request succeeded with JSON response', response);
                     document.querySelector('#shorten-error-message').innerText = '';
                     document.querySelector('#short_url').innerHTML =
-                        '<span class="domain">' + response.data.short_url.split('/')[0] + '</span>'
-                        + '/<span class="path" contentEditable="true">' + response.data.short_url.split('/')[1] + '</span><span>&nbsp;✏&nbsp;</span>';
+                        '<a href="'+ long_url+ '"><strong><span class="domain">' + response.data.short_url.split('/')[0] + '</span>'
+                        + '/<span class="path" contentEditable="true" onblur="postShortURL(this)">' + response.data.short_url.split('/')[1] + '</span><span>&nbsp;✏&nbsp;</span></strong></a>';
+                    document.querySelector("#short_url span.path").addEventListener('click', editShortURL, false);
                     document.querySelector('#result').setAttribute('style', 'visibility: visible');
                     if (response.data.warning !== null) {
                         document.querySelector('#shorten-error-message').innerText = response.data.warning;
@@ -163,7 +168,7 @@
             <div class="media-content">
               <div class="content">
                 <p>
-                  <a href="@@long_url"><strong><span class="domain">@@short_url_domain</span>/<span class="path" contentEditable="true">@@short_url_path</span><span>&nbsp;✏&nbsp;</span></strong></a>
+                  <a href="@@long_url"><strong><span class="domain">@@short_url_domain</span>/<span class="path" contentEditable="true" onblur="postShortURL(this)">@@short_url_path</span><span>&nbsp;✏&nbsp;</span></strong></a>
                   <small>@@title</small>
                   <br>
                   @@description
