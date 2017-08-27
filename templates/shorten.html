@@ -86,18 +86,33 @@
             var longURL = element.closest('a').href;
             var domain = element.previousElementSibling.innerText;
             var customPath = element.innerText;
+            axios.post('/api/v1/shorten', {'domain': domain, 'url': longURL, 'custom_path': customPath})
+                .then(function (response) {
+                    console.log('Request succeeded with JSON response', response);
+                    if (response.data.warning !== null) {
+                        element.nextElementSibling.innerText = 'x';
+                        element.focus();
+                    } else {
+                        element.nextElementSibling.innerHTML = '&#10004;';
+                    }
+                })
+                .catch(function (error) {
+                    console.log(error);
+                    element.nextElementSibling.insertAdjacentHTML('afterend', '<p class="help is-danger">'+error.response.data.errors.join()+'</p>');
+                    element.focus();
+                });
         }
 
-        function shorten(long_url, custom_path = false) {
+        function shorten(longURL) {
             var domainElement = document.querySelector('#domain');
             var domain = domainElement.options[domainElement.selectedIndex].value;
             document.querySelector('div.spinner').setAttribute('style', 'visibility: visible');
-            axios.post('/api/v1/shorten', {'domain': domain, 'url': long_url, 'custom_path': custom_path})
+            axios.post('/api/v1/shorten', {'domain': domain, 'url': longURL})
                 .then(function (response) {
                     console.log('Request succeeded with JSON response', response);
                     document.querySelector('#shorten-error-message').innerText = '';
                     document.querySelector('#short_url').innerHTML =
-                        '<a href="'+ long_url+ '"><strong><span class="domain">' + response.data.short_url.split('/')[0] + '</span>'
+                        '<a href="'+ longURL+ '"><strong><span class="domain">' + response.data.short_url.split('/')[0] + '</span>'
                         + '/<span class="path" contentEditable="true" onblur="postShortURL(this)">' + response.data.short_url.split('/')[1] + '</span><span>&nbsp;✏&nbsp;</span></strong></a>';
                     document.querySelector("#short_url span.path").addEventListener('click', editShortURL, false);
                     document.querySelector('#result').setAttribute('style', 'visibility: visible');
@@ -120,8 +135,8 @@
         }
 
         function copyShortUrl() {
-            var short_url = document.querySelector('#short_url').innerText;
-            var copyResult = copyToClipboard(short_url);
+            var shortURL = document.querySelector('#short_url span.domain').innerText +'/'+document.querySelector('#short_url span.path').innerText;
+            var copyResult = copyToClipboard(shortURL);
             if (copyResult) {
                 document.querySelector('span.copy-status').innerHTML = '&#10004;';
                 setTimeout(function () {
@@ -169,8 +184,9 @@
               <div class="content">
                 <p>
                   <a href="@@long_url"><strong><span class="domain">@@short_url_domain</span>/<span class="path" contentEditable="true" onblur="postShortURL(this)">@@short_url_path</span><span>&nbsp;✏&nbsp;</span></strong></a>
+                  <br/>
                   <small>@@title</small>
-                  <br>
+                  <br/>
                   @@description
                 </p>
               </div>

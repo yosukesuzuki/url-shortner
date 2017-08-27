@@ -198,6 +198,14 @@ class ShortenHandlerTest(unittest.TestCase):
         self.assertEqual(bad_response_duplication.status_code, 400)
         self.assertEqual(json.loads(bad_response_duplication.data)['errors'],
                          ['The short URL path exists already'])
+        response_strip = self.app.post('/api/v1/shorten',
+                                       data=json.dumps(
+                                           {'url': 'https://github.com/yosukesuzuki/url-shortner', 'domain': 'jmpt.me',
+                                            'custom_path': 'jmptme1\n'}),
+                                       content_type='application/json',
+                                       follow_redirects=False)
+        self.assertEqual(response_strip.status_code, 200)
+        self.assertEqual(json.loads(response_strip.data)['short_url'], 'jmpt.me/jmptme1')
 
 
 class ShortURLAPITest(unittest.TestCase):

@@ -155,7 +155,7 @@ def shorten(team_id):
         if form.custom_path.data is None or (form.custom_path.data) == 0:
             path = generate_short_url_path(form.url.data)
         else:
-            path = form.custom_path.data
+            path = form.custom_path.data.strip()
         key_name = "{}_{}".format(form.domain.data, path)
         try:
             ogp = opengraph.OpenGraph(url=form.url.data)
