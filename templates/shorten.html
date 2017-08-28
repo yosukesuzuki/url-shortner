@@ -82,6 +82,13 @@
             var longURL = e.clipboardData.getData('Text');
             shorten(longURL);
         }
+        function onEnterKey(element, event) {
+            var charCode = (typeof event.which === "number") ? event.which : event.keyCode;
+            if(charCode == 13){
+                event.preventDefault();
+                postShortURL(element);
+            }
+        }
         function postShortURL(element){
             var longURL = element.closest('a').href;
             var domain = element.previousElementSibling.innerText;
@@ -94,6 +101,7 @@
                         element.focus();
                     } else {
                         element.nextElementSibling.innerHTML = '&#10004;';
+                        element.blur();
                     }
                 })
                 .catch(function (error) {
@@ -113,7 +121,7 @@
                     document.querySelector('#shorten-error-message').innerText = '';
                     document.querySelector('#short_url').innerHTML =
                         '<a href="'+ longURL+ '"><strong><span class="domain">' + response.data.short_url.split('/')[0] + '</span>'
-                        + '/<span class="path" contentEditable="true" onblur="postShortURL(this)">' + response.data.short_url.split('/')[1] + '</span><span>&nbsp;✏&nbsp;</span></strong></a>';
+                        + '/<span class="path" contentEditable="true" onkeypress="onEnterKey(this, event)">' + response.data.short_url.split('/')[1] + '</span><span>&nbsp;✏&nbsp;</span></strong></a>';
                     document.querySelector("#short_url span.path").addEventListener('click', editShortURL, false);
                     document.querySelector('#result').setAttribute('style', 'visibility: visible');
                     if (response.data.warning !== null) {
@@ -183,7 +191,7 @@
             <div class="media-content">
               <div class="content">
                 <p>
-                  <a href="@@long_url"><strong><span class="domain">@@short_url_domain</span>/<span class="path" contentEditable="true" onblur="postShortURL(this)">@@short_url_path</span><span>&nbsp;✏&nbsp;</span></strong></a>
+                  <a href="@@long_url"><strong><span class="domain">@@short_url_domain</span>/<span class="path" contentEditable="true" onkeypress="onEnterKey(this, event)">@@short_url_path</span><span>&nbsp;✏&nbsp;</span></strong></a>
                   <br/>
                   <small>@@title</small>
                   <br/>
