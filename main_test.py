@@ -207,6 +207,24 @@ class ShortenHandlerTest(unittest.TestCase):
         self.assertEqual(response_strip.status_code, 200)
         self.assertEqual(json.loads(response_strip.data)['short_url'], 'jmpt.me/jmptme1')
 
+    @patch('opengraph.OpenGraph')
+    def testDelete(self, OpenGraph):
+        OpenGraph.return_value = {'title': 'GitHub', 'description': 'GitHub is where people build software',
+                                  'site_name': 'GitHub',
+                                  'image': 'https://assets-cdn.github.com/images/modules/open_graph/github-logo.png'}
+        self.app.set_cookie('localhost', 'team', str(self.team_id))
+        response = self.app.post('/api/v1/shorten',
+                                 data=json.dumps(
+                                     {'url': 'https://github.com/yosukesuzuki/url-shortner', 'domain': 'jmpt.me',
+                                      'custom_path': 'jmptme'}),
+                                 content_type='application/json',
+                                 follow_redirects=False)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.data)['short_url'], 'jmpt.me/jmptme')
+        delete_response = self.app.delete('/api/v1/short_urls/jmpt.me/jmptme')
+        self.assertEqual(delete_response.status_code, 200)
+        self.assertEqual(json.loads(delete_response.data)['success'], 'the url was deleted')
+
 
 class ShortURLAPITest(unittest.TestCase):
     def setUp(self):

@@ -182,6 +182,18 @@ def shorten(team_id):
     return make_response(jsonify({'errors': errors}), 400)
 
 
+@app.route('/api/v1/short_urls/<short_url_domain>/<short_url_path>', methods=['DELETE'])
+@team_id_required
+def delete_shorten_url(team_id, short_url_domain, short_url_path):
+    short_url = ShortURL.get_by_id("{}_{}".format(short_url_domain, short_url_path))
+    if short_url is None:
+        return make_response(jsonify({'errors': ['the short url was not found']}), 404)
+    if str(short_url.team.id()) != str(team_id):
+        return make_response(jsonify({'errors': ['you can not delete the short url']}), 400)
+    short_url.key.delete()
+    return jsonify({'success': 'the url was deleted'})
+
+
 @app.route('/api/v1/short_urls', methods=['GET'])
 @team_id_required
 def shorten_urls(team_id):
