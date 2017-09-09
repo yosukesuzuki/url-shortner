@@ -13,6 +13,7 @@
 # limitations under the License.
 
 # [START app]
+import os
 import logging
 from functools import wraps
 from urllib2 import HTTPError
@@ -56,13 +57,19 @@ def strip_scheme(url):
     return parsed.geturl().replace(scheme, '', 1).rstrip('/')
 
 
+def is_local():
+    return os.environ["SERVER_NAME"] in ("localhost", "www.lexample.com")
+
+
 @app.route('/')
 def index():
     team_id = request.cookies.get('team', False)
     team_setting_id = request.args.get('team', False)
     if team_id is False and team_setting_id is False:
         return render_template('index.html')
-    domain_settings = ['jmpt.me', strip_scheme(request.base_url)]
+    domain_settings = [strip_scheme(request.base_url)]
+    if is_local():
+        domain_settings = ['jmpt.me'] + domain_settings
     if team_id is False and team_setting_id:
         if validate_team_user(team_setting_id, users.get_current_user().user_id()):
             response = make_response(render_template('shorten.html', domain_settings=domain_settings))
@@ -70,7 +77,6 @@ def index():
             return response
     if team_id and users.get_current_user():
         if validate_team_user(team_id, users.get_current_user().user_id()):
-            domain_settings = ['jmpt.me', strip_scheme(request.base_url)]
             return render_template('shorten.html', domain_settings=domain_settings)
     return render_template('index.html')
 

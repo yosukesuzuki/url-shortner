@@ -121,7 +121,7 @@
                     document.querySelector('#shorten-error-message').innerText = '';
                     document.querySelector('#short_url').innerHTML =
                         '<a href="'+ longURL+ '"><strong><span class="domain">' + response.data.short_url.split('/')[0] + '</span>'
-                        + '/<span class="path" contentEditable="true" onkeypress="onEnterKey(this, event)">' + response.data.short_url.split('/')[1] + '</span><span>&nbsp;✏&nbsp;</span></strong></a>';
+                        + '/<span class="path" contentEditable="true" onkeypress="onEnterKey(this, event)">' + response.data.short_url.split('/')[1] + '</span></strong></a>';
                     document.querySelector("#short_url span.path").addEventListener('click', editShortURL, false);
                     document.querySelector('#result').setAttribute('style', 'visibility: visible');
                     if (response.data.warning !== null) {
@@ -191,7 +191,7 @@
             <div class="media-content">
               <div class="content">
                 <p>
-                  <a href="@@long_url"><strong><span class="domain">@@short_url_domain</span>/<span class="path" contentEditable="true" onkeypress="onEnterKey(this, event)">@@short_url_path</span><span>&nbsp;✏&nbsp;</span></strong></a>
+                  <a href="@@long_url"><strong><span class="domain">@@short_url_domain</span>/<span class="path" contentEditable="true" onkeypress="onEnterKey(this, event)">@@short_url_path</span></strong></a>
                   <br/>
                   <small>@@title</small>
                   <br/>
