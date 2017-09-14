@@ -69,10 +69,12 @@
         shortnButtonTarget.addEventListener('click', shortenButton, false);
         var copyButtonTarget = document.querySelector('#copy-short_url');
         copyButtonTarget.addEventListener('click', copyShortUrl, false);
+
         function editShortURL(event) {
             event.preventDefault();
             this.focus();
         }
+
         function shortenButton() {
             var longURL = document.querySelector('#long_url').value;
             shorten(longURL);
@@ -82,14 +84,16 @@
             var longURL = e.clipboardData.getData('Text');
             shorten(longURL);
         }
+
         function onEnterKey(element, event) {
             var charCode = (typeof event.which === "number") ? event.which : event.keyCode;
-            if(charCode == 13){
+            if (charCode == 13) {
                 event.preventDefault();
                 postShortURL(element);
             }
         }
-        function postShortURL(element){
+
+        function postShortURL(element) {
             var longURL = element.closest('a').href;
             var domain = element.previousElementSibling.innerText;
             var customPath = element.innerText;
@@ -106,7 +110,7 @@
                 })
                 .catch(function (error) {
                     console.log(error);
-                    element.nextElementSibling.insertAdjacentHTML('afterend', '<p class="help is-danger">'+error.response.data.errors.join()+'</p>');
+                    element.nextElementSibling.insertAdjacentHTML('afterend', '<p class="help is-danger">' + error.response.data.errors.join() + '</p>');
                     element.focus();
                 });
         }
@@ -120,7 +124,7 @@
                     console.log('Request succeeded with JSON response', response);
                     document.querySelector('#shorten-error-message').innerText = '';
                     document.querySelector('#short_url').innerHTML =
-                        '<a href="'+ longURL+ '"><strong><span class="domain">' + response.data.short_url.split('/')[0] + '</span>'
+                        '<a href="' + longURL + '"><strong><span class="domain">' + response.data.short_url.split('/')[0] + '</span>'
                         + '/<span class="path" contentEditable="true" onkeypress="onEnterKey(this, event)">' + response.data.short_url.split('/')[1] + '</span></strong></a>';
                     document.querySelector("#short_url span.path").addEventListener('click', editShortURL, false);
                     document.querySelector('#result').setAttribute('style', 'visibility: visible');
@@ -143,7 +147,7 @@
         }
 
         function copyShortUrl() {
-            var shortURL = document.querySelector('#short_url span.domain').innerText +'/'+document.querySelector('#short_url span.path').innerText;
+            var shortURL = document.querySelector('#short_url span.domain').innerText + '/' + document.querySelector('#short_url span.path').innerText;
             var copyResult = copyToClipboard(shortURL);
             if (copyResult) {
                 document.querySelector('span.copy-status').innerHTML = '&#10004;';
@@ -199,9 +203,29 @@
                 </p>
               </div>
             </div>
+            <div class="media-right">
+              <button class="delete"></button>
+            </div>
           </article>
         </div>
         `
+
+        function deleteShortURL(event) {
+            const that = this.parentElement.parentElement;
+            const domain = that.querySelector('span.domain').innerText;
+            const path = that.querySelector('span.path').innerText;
+            const shortURL = domain + '/' + path;
+            if (confirm("delete this short url?") == true) {
+                this.parentElement.parentElement.parentElement.remove();
+                axios.delete('/api/v1/short_urls/' + shortURL)
+                    .then(function (response) {
+                        console.log('delete failed');
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            }
+        }
 
         axios.get('/api/v1/short_urls')
             .then(function (response) {
@@ -219,6 +243,9 @@
                 document.querySelector('#short_urls').innerHTML = resultsHTML;
                 document.querySelectorAll('span.path').forEach(function (element) {
                     element.addEventListener('click', editShortURL, false);
+                });
+                document.querySelectorAll('button.delete').forEach(function (element) {
+                    element.addEventListener('click', deleteShortURL, false);
                 });
             })
             .catch(function (error) {

@@ -213,7 +213,8 @@ def shorten_urls(team_id):
                 'long_url': e.long_url,
                 'image': e.image,
                 'description': e.description,
-                'created_at': e.created_at.strftime('%Y-%m-%d %H:%M:%S%Z')} for e in entities]
+                'created_at': e.created_at.strftime('%Y-%m-%d %H:%M:%S%Z'),
+                'id': e.key.id()} for e in entities]
     return jsonify({'results': results})
 
 
