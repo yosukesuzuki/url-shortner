@@ -23,7 +23,7 @@ import opengraph
 import wtforms_json
 from flask import Flask, render_template, request, redirect, url_for, make_response, jsonify
 from forms import RegistrationForm, LongURLForm
-from google.appengine.api import users
+from google.appengine.api import users, memcache
 from google.appengine.ext import ndb
 from models import Team, User, ShortURL, ShortURLID
 
@@ -33,9 +33,16 @@ app = Flask(__name__)
 
 def validate_team_user(team_id, user_id):  # type(str, str) -> bool
     team_user_id = "{}_{}".format(team_id, user_id)
+    memcache_key = "validation-{}".format(team_user_id)
+    validation_result = memcache.get(memcache_key)
+    if validation_result:
+        return validation_result
     team_user = User.get_by_id(team_user_id)
     if team_user and team_user.in_use is True:
-        return True
+        team = team_user.team.get()
+        team_name = team.team_name
+        memcache.set(memcache_key, team_name)
+        return team_name
     logging.info('validation failed: team_id = {}, user_id = {}'.format(team_id, user_id))
     return False
 
@@ -44,9 +51,10 @@ def team_id_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         team_id = request.cookies.get('team', False)
-        if validate_team_user(team_id, users.get_current_user().user_id()) is False:
+        team_name = validate_team_user(team_id, users.get_current_user().user_id())
+        if team_name is False:
             return make_response(jsonify({'errors': ['bad request, should have team session data']}), 401)
-        return f(team_id, *args, **kwargs)
+        return f(team_id, team_name, *args, **kwargs)
 
     return decorated_function
 
@@ -71,13 +79,16 @@ def index():
     if is_local():
         domain_settings = ['jmpt.me'] + domain_settings
     if team_id is False and team_setting_id:
-        if validate_team_user(team_setting_id, users.get_current_user().user_id()):
-            response = make_response(render_template('shorten.html', domain_settings=domain_settings))
+        team_name = validate_team_user(team_setting_id, users.get_current_user().user_id())
+        if team_name:
+            response = make_response(render_template('shorten.html', domain_settings=domain_settings),
+                                     team_name=team_name)
             response.set_cookie('team', value=team_setting_id)
             return response
     if team_id and users.get_current_user():
-        if validate_team_user(team_id, users.get_current_user().user_id()):
-            return render_template('shorten.html', domain_settings=domain_settings)
+        team_name = validate_team_user(team_id, users.get_current_user().user_id())
+        if team_name:
+            return render_template('shorten.html', domain_settings=domain_settings, team_name=team_name)
     return render_template('index.html')
 
 
@@ -135,6 +146,12 @@ def signout(team_id):
     logging.info('remove cookie "team":{}'.format(team_id))
     response.set_cookie('team', '', expires=0)
     return response
+
+
+@app.route('/page/settings', methods=['GET'])
+@team_id_required
+def settings(team_id):
+    return render_template('settings.html')
 
 
 def generate_short_url_path(long_url):  # type: (str) -> str
