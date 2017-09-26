@@ -141,7 +141,7 @@ def signin():
 
 @app.route('/page/signout', methods=['GET'])
 @team_id_required
-def signout(team_id):
+def signout(team_id, team_name):
     response = make_response(redirect(url_for('index')))
     logging.info('remove cookie "team":{}'.format(team_id))
     response.set_cookie('team', '', expires=0)
@@ -150,7 +150,7 @@ def signout(team_id):
 
 @app.route('/page/settings', methods=['GET'])
 @team_id_required
-def settings(team_id):
+def settings(team_id, team_name):
     return render_template('settings.html')
 
 
@@ -170,7 +170,7 @@ def generate_short_url_path(long_url):  # type: (str) -> str
 
 @app.route('/api/v1/shorten', methods=['POST'])
 @team_id_required
-def shorten(team_id):
+def shorten(team_id, team_name):
     user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
     user_entity = User.get_by_id(user_key_name)
     form = LongURLForm.from_json(request.get_json())
@@ -207,7 +207,7 @@ def shorten(team_id):
 
 @app.route('/api/v1/short_urls/<short_url_domain>/<short_url_path>', methods=['DELETE'])
 @team_id_required
-def delete_shorten_url(team_id, short_url_domain, short_url_path):
+def delete_shorten_url(team_id, team_name, short_url_domain, short_url_path):
     short_url = ShortURL.get_by_id("{}_{}".format(short_url_domain, short_url_path))
     if short_url is None:
         return make_response(jsonify({'errors': ['the short url was not found']}), 404)
@@ -219,7 +219,7 @@ def delete_shorten_url(team_id, short_url_domain, short_url_path):
 
 @app.route('/api/v1/short_urls', methods=['GET'])
 @team_id_required
-def shorten_urls(team_id):
+def shorten_urls(team_id, team_name):
     user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
     user_entity = User.get_by_id(user_key_name)
     q = ShortURL.query()
