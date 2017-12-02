@@ -60,10 +60,19 @@ class ShortURL(ndb.Model):
     site_name = ndb.StringProperty()
     description = ndb.TextProperty()
     image = ndb.StringProperty()
+    tags = ndb.StringProperty(repeated=True)
     updated_at = ndb.DateTimeProperty(auto_now=True)
     created_at = ndb.DateTimeProperty(auto_now_add=True)
 
 
 class ShortURLID(ndb.Model):
     long_url = ndb.StringProperty()
+    created_at = ndb.DateTimeProperty(auto_now_add=True)
+
+
+class Click(ndb.Model):
+    short_url = ndb.KeyProperty(required=True, kind=ShortURL)
+    referrer = ndb.StringProperty()
+    ip_address = ndb.StringProperty()
+    user_agenet = ndb.StringProperty()
     created_at = ndb.DateTimeProperty(auto_now_add=True)
