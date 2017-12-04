@@ -235,6 +235,15 @@ def shorten_urls(team_id, team_name):
     return jsonify({'results': results})
 
 
+@app.route('/<short_url_path>', methods=['GET'])
+def extract_short_url(short_url_path):
+    short_url = ShortURL.get_by_id("{}_{}".format(request.host, short_url_path))
+    if short_url is None:
+        response = make_response(render_template('404.html'), 404)
+        return response
+    return redirect(short_url.long_url)
+
+
 @app.errorhandler(500)
 def server_error(e):
     # Log the error and stacktrace.
