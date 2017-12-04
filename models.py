@@ -74,5 +74,6 @@ class Click(ndb.Model):
     short_url = ndb.KeyProperty(required=True, kind=ShortURL)
     referrer = ndb.StringProperty()
     ip_address = ndb.StringProperty()
-    user_agenet = ndb.StringProperty()
+    user_agent = ndb.StringProperty()
+    get_parameters = ndb.JsonProperty()
     created_at = ndb.DateTimeProperty(auto_now_add=True)
