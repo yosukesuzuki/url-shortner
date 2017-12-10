@@ -13,9 +13,9 @@
 # limitations under the License.
 import tempfile
 
-tempfile.SpooledTemporaryFile = tempfile.TemporaryFile
-
 from google.appengine.ext import vendor
+
+tempfile.SpooledTemporaryFile = tempfile.TemporaryFile
 
 # Add any libraries installed in the "lib" folder.
 vendor.add('lib')
