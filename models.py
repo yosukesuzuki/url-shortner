@@ -72,6 +72,7 @@ class ShortURLID(ndb.Model):
 
 class Click(ndb.Model):
     short_url = ndb.KeyProperty(required=True, kind=ShortURL)
+    tags = ndb.ComputedProperty(lambda e: ShortURL.tags.get_value_for_datastore(e.short_url))
     referrer = ndb.StringProperty()
     ip_address = ndb.StringProperty()
     user_agent = ndb.StringProperty()
