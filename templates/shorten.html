@@ -201,6 +201,7 @@
                   <br/>
                   @@description
                 </p>
+                <p><a href="/page/detail/@@id" class="button is-info">Edit</a></p>
               </div>
             </div>
             <div class="media-right">
@@ -238,7 +239,8 @@
                         .replace('@@short_url_domain', shortURLDomain)
                         .replace('@@short_url_path', shortURLPath)
                         .replace('@@long_url', val.long_url)
-                        .replace('@@description', val.description);
+                        .replace('@@description', val.description)
+                        .replace('@@id', val.id);
                 });
                 document.querySelector('#short_urls').innerHTML = resultsHTML;
                 document.querySelectorAll('span.path').forEach(function (element) {

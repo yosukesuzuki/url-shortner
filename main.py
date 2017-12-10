@@ -154,6 +154,17 @@ def settings(team_id, team_name):
     return render_template('settings.html')
 
 
+@app.route('/page/detail/<short_url_id>', methods=['GET'])
+@team_id_required
+def detail(team_id, team_name, short_url_id):
+    user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
+    user_entity = User.get_by_id(user_key_name)
+    short_url = ShortURL.get_by_id(short_url_id)
+    if short_url.team != user_entity.team:
+        return make_response(jsonify({'errors': ['you can not edit this short url']}), 401)
+    return render_template('detail.html', short_url=short_url)
+
+
 def generate_short_url_path(long_url):  # type: (str) -> str
     KEY_BASE = "0123456789abcdefghijklmnopqrstuvwxyz"
     BASE = 36
@@ -188,7 +199,7 @@ def shorten(team_id, team_name):
             warning = 'cannot look up URL, is this right URL?'
         short_url_string = "{}/{}".format(form.domain.data, path)
         short_url = ShortURL(id=key_name, long_url=form.url.data, short_url=short_url_string,
-                             team=user_entity.team, created_by=user_entity.key,
+                             team=user_entity.team, updated_by=user_entity.key, created_by=user_entity.key,
                              title=ogp.get('title', ''), description=ogp.get('description', ''),
                              site_name=ogp.get('site_name', ''), image=ogp.get('image', '')
                              )
@@ -230,6 +241,7 @@ def shorten_urls(team_id, team_name):
                 'long_url': e.long_url,
                 'image': e.image,
                 'description': e.description,
+                'tags': e.tags,
                 'created_at': e.created_at.strftime('%Y-%m-%d %H:%M:%S%Z'),
                 'id': e.key.id()} for e in entities]
     return jsonify({'results': results})

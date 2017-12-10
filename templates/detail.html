@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block header %}
+    <script src="https://unpkg.com/axios@0.16.2/dist/axios.min.js"></script>
+{% endblock %}
+{% block nav %}
+    {% include "nav_for_login.html" %}
+{% endblock %}
+{% block content %}
+    <h1>detail</h1>
+    <div class="columns" id="app">
+        <div class="column is-two-thirds">
+        </div>
+    </div>
+    <div class="columns">
+        <div class="column is-three-quarters" id="short_urls">
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+    <script>
+    </script>
+{% endblock %}
