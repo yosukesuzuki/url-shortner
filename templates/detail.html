@@ -6,9 +6,13 @@
     {% include "nav_for_login.html" %}
 {% endblock %}
 {% block content %}
-    <h1>detail</h1>
     <div class="columns" id="app">
-        <div class="column is-two-thirds">
+        <div class="content">
+            <h1>{{ short_url.title }}</h1>
+            <p>{{ short_url.long_url }}</p>
+            <p>↓</p>
+            <p>{{ short_url.short_url }}</p>
+            <p>{{ short_url.description }}</p>
         </div>
     </div>
     <div class="columns">
