@@ -201,7 +201,19 @@
                   <br/>
                   @@description
                 </p>
-                <p><a href="/page/detail/@@id" class="button is-info">Edit</a></p>
+                <p>
+                    <div class="field has-addons">
+                      <div class="control">
+                        <input class="input is-small" type="text" placeholder="input a tag">
+                      </div>
+                      <div class="control">
+                        <a class="button is-small">
+                          Add Tag +
+                        </a>
+                      </div>
+                    </div>
+                </p>
+                <p><a href="/page/detail/@@id" class="button is-rounded">data</a></p>
               </div>
             </div>
             <div class="media-right">
@@ -226,6 +238,10 @@
                         console.log(error);
                     });
             }
+        }
+
+        function addTag(event){
+
         }
 
         axios.get('/api/v1/short_urls')
