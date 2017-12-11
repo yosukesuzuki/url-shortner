@@ -9,10 +9,26 @@
     <div class="columns" id="app">
         <div class="content">
             <h1>{{ short_url.title }}</h1>
-            <p>{{ short_url.long_url }}</p>
-            <p>↓</p>
-            <p>{{ short_url.short_url }}</p>
-            <p>{{ short_url.description }}</p>
+            <div class="box">
+                <article class="media">
+                    <div class="media-left">
+                        <figure class="image is-64x64">
+                            <img src="{{ short_url.image }}" alt="Image"></a>
+                        </figure>
+                    </div>
+                    <div class="media-content">
+                        <div class="content">
+                            <p>
+                                <a href="{{ short_url.long_url }}">{{ short_url.long_url }}</a>
+                                <br/>
+                                → {{ short_url.short_url }}
+                                <br/>
+                                {{ short_url.description }}
+                            </p>
+                        </div>
+                    </div>
+                </article>
+            </div>
         </div>
     </div>
     <div class="columns">
