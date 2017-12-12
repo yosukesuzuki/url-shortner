@@ -204,16 +204,17 @@
                 <p>
                     <div class="field has-addons">
                       <div class="control">
-                        <input class="input is-small" type="text" placeholder="input a tag">
+                        <input class="input is-small" type="text" placeholder="input a tag" name="tag">
                       </div>
                       <div class="control">
-                        <a class="button is-small">
+                        <button class="button is-small addtag">
                           Add Tag +
-                        </a>
+                        </button>
                       </div>
                     </div>
+                    <p class="tagline"></p>
                 </p>
-                <p><a href="/page/detail/@@id" class="button is-rounded">data</a></p>
+                <p><a href="/page/detail/@@id"><u>check detail data</u></a></p>
               </div>
             </div>
             <div class="media-right">
@@ -241,7 +242,21 @@
         }
 
         function addTag(event){
-
+            const that = this.parentElement.parentElement;
+            const tag = that.querySelector('input.input');
+            const tagValue = tag.value.trim();
+            var duplication = false;
+            if (tagValue != "") {
+               that.parentElement.querySelector('p.tagline').querySelectorAll('span.tag').forEach(function(val, index){
+                   if(val.innerText == tagValue){
+                       duplication = true;
+                   }
+               });
+               if(duplication === false) {
+                   that.parentElement.querySelector('p.tagline').insertAdjacentHTML("beforeend", '<span class="tag is-link">' + tagValue + '<button class="delete is-small"></button></span>&nbsp;');
+               }
+               tag.value = "";
+            }
         }
 
         axios.get('/api/v1/short_urls')
@@ -261,6 +276,9 @@
                 document.querySelector('#short_urls').innerHTML = resultsHTML;
                 document.querySelectorAll('span.path').forEach(function (element) {
                     element.addEventListener('click', editShortURL, false);
+                });
+                document.querySelectorAll('button.addtag').forEach(function (element) {
+                    element.addEventListener('click', addTag, false);
                 });
                 document.querySelectorAll('button.delete').forEach(function (element) {
                     element.addEventListener('click', deleteShortURL, false);
