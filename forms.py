@@ -2,7 +2,7 @@ import re
 
 import validators as altvalidator
 from models import Team, ShortURL
-from wtforms import Form, StringField, validators, ValidationError
+from wtforms import Form, StringField, validators, ValidationError, TextAreaField
 
 
 class RegistrationForm(Form):
@@ -39,3 +39,14 @@ class LongURLForm(Form):
         short_url = ShortURL.get_by_id(key_name)
         if short_url is not None:
             raise ValidationError(message='The short URL path exists already')
+
+
+class UpdateShortURLForm(Form):
+    tag = StringField('Tag',
+                      [validators.optional(),
+                       validators.Length(min=1, max=25, message='Tag name should be between 1 and 25 characters')])
+    memo = TextAreaField(u'Memo for short url', [validators.optional(), validators.length(max=500)])
+
+    def validate(self):
+        if not self.tag.data and not self.memo.data:
+            raise ValidationError(message='At least one of Tag and Memo must be set')

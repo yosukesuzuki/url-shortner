@@ -22,7 +22,7 @@ from urlparse import urlparse
 import opengraph
 import wtforms_json
 from flask import Flask, render_template, request, redirect, url_for, make_response, jsonify
-from forms import RegistrationForm, LongURLForm
+from forms import RegistrationForm, LongURLForm, UpdateShortURLForm
 from google.appengine.api import users, memcache
 from google.appengine.ext import ndb
 from models import Team, User, ShortURL, ShortURLID
@@ -207,6 +207,38 @@ def shorten(team_id, team_name):
         result = {'short_url': short_url_string, 'title': short_url.title,
                   'description': short_url.description,
                   'image': short_url.image, 'warning': warning}
+        return jsonify(result)
+    errors = []
+    for field in form:
+        if len(field.errors) > 0:
+            for e in field.errors:
+                errors.append(e)
+    return make_response(jsonify({'errors': errors}), 400)
+
+
+@app.route('/api/v1/shorten/<short_url_domain>/<short_url_path>/update', methods=['PATCH'])
+@team_id_required
+def update_shorten_url(team_id, team_name, short_url_domain, short_url_path):
+    user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
+    user_entity = User.get_by_id(user_key_name)
+    short_url = ShortURL.get_by_id("{}_{}".format(short_url_domain, short_url_path))
+    if short_url is None:
+        return make_response(jsonify({'errors': ['the short url was not found']}), 404)
+    if str(short_url.team.id()) != str(team_id):
+        return make_response(jsonify({'errors': ['you can not delete the short url']}), 400)
+    form = UpdateShortURLForm.from_json(request.get_json())
+    if form.validate():
+        if form.tag.data is not None:
+            tags = short_url.tags
+            tags.append(form.tag.data)
+            short_url.tags = tags
+        if form.memo.data is not None:
+            short_url.memo = form.memo.data
+        short_url.updated_by = user_entity.key
+        short_url.put()
+        result = {'short_url': '{}/{}'.format(short_url_domain, short_url_path), 'title': short_url.title,
+                  'description': short_url.description,
+                  'image': short_url.image, 'tags': short_url.tags, 'memo': short_url.memo}
         return jsonify(result)
     errors = []
     for field in form:
