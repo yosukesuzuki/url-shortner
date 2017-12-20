@@ -216,7 +216,7 @@ def shorten(team_id, team_name):
     return make_response(jsonify({'errors': errors}), 400)
 
 
-@app.route('/api/v1/shorten/<short_url_domain>/<short_url_path>/update', methods=['PATCH'])
+@app.route('/api/v1/short_urls/<short_url_domain>/<short_url_path>/update', methods=['GET', 'PATCH'])
 @team_id_required
 def update_shorten_url(team_id, team_name, short_url_domain, short_url_path):
     user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
@@ -225,7 +225,7 @@ def update_shorten_url(team_id, team_name, short_url_domain, short_url_path):
     if short_url is None:
         return make_response(jsonify({'errors': ['the short url was not found']}), 404)
     if str(short_url.team.id()) != str(team_id):
-        return make_response(jsonify({'errors': ['you can not delete the short url']}), 400)
+        return make_response(jsonify({'errors': ['you can not update the short url']}), 400)
     form = UpdateShortURLForm.from_json(request.get_json())
     if form.validate():
         if form.tag.data is not None:
