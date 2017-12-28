@@ -231,7 +231,7 @@ def update_shorten_url(team_id, team_name, short_url_domain, short_url_path):
         if form.tag.data is not None:
             tags = short_url.tags
             tags.append(form.tag.data)
-            short_url.tags = tags
+            short_url.tags = set(tags)
         if form.memo.data is not None:
             short_url.memo = form.memo.data
         short_url.updated_by = user_entity.key
@@ -246,6 +246,27 @@ def update_shorten_url(team_id, team_name, short_url_domain, short_url_path):
             for e in field.errors:
                 errors.append(e)
     return make_response(jsonify({'errors': errors}), 400)
+
+
+@app.route('/api/v1/short_urls/<short_url_domain>/<short_url_path>/tags/<tag>', methods=['DELETE'])
+@team_id_required
+def delete_shorten_url_tag(team_id, team_name, short_url_domain, short_url_path, tag):
+    user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
+    user_entity = User.get_by_id(user_key_name)
+    short_url = ShortURL.get_by_id("{}_{}".format(short_url_domain, short_url_path))
+    if short_url is None:
+        return make_response(jsonify({'errors': ['the short url was not found']}), 404)
+    if str(short_url.team.id()) != str(team_id):
+        return make_response(jsonify({'errors': ['you can not update the short url']}), 400)
+    tags = short_url.tags
+    tags.remove(tag)
+    short_url.tags = set(tags)
+    short_url.updated_by = user_entity.key
+    short_url.put()
+    result = {'short_url': '{}/{}'.format(short_url_domain, short_url_path), 'title': short_url.title,
+              'description': short_url.description,
+              'image': short_url.image, 'tags': short_url.tags, 'memo': short_url.memo}
+    return jsonify(result)
 
 
 @app.route('/api/v1/short_urls/<short_url_domain>/<short_url_path>', methods=['DELETE'])

@@ -237,6 +237,15 @@ class ShortenHandlerTest(unittest.TestCase):
         self.assertEqual(bad_response.status_code, 400)
         self.assertEqual(json.loads(bad_response.data)['errors'],
                          ['At least one of Tag and Memo must be set'])
+        patch_response2 = self.app.patch('/api/v1/short_urls/jmpt.me/jmptme/update',
+                                         data=json.dumps({'tag': 'testtag2'}),
+                                         content_type='application/json',
+                                         follow_redirects=False)
+        self.assertEqual(json.loads(patch_response2.data)['tags'], ['testtag', 'testtag2'])
+        tag_delete_response = self.app.delete('/api/v1/short_urls/jmpt.me/jmptme/tags/testtag2',
+                                              content_type='application/json',
+                                              follow_redirects=False)
+        self.assertEqual(json.loads(tag_delete_response.data)['tags'], ['testtag'])
 
     @patch('opengraph.OpenGraph')
     def testDelete(self, OpenGraph):
