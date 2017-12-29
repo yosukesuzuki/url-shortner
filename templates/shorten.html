@@ -212,7 +212,7 @@
                         </button>
                       </div>
                     </div>
-                    <p class="tagline"></p>
+                    <p class="tagline">@@tags</p>
                 </p>
                 <p><a href="/page/detail/@@id"><u>check detail data</u></a></p>
               </div>
@@ -222,7 +222,9 @@
             </div>
           </article>
         </div>
-        `
+        `;
+
+        var tagTemplate = `<span class="tag is-link">@@tag<button class="delete is-small delete-tag" onclick="deleteTag(this, event)"></button></span>&nbsp;`;
 
         function deleteShortURL(event) {
             const that = this.parentElement.parentElement;
@@ -256,7 +258,7 @@
                     const shortURL = that.parentElement.dataset.shorturl;
                     axios.patch('/api/v1/short_urls/' + shortURL, {'tag': tagValue})
                         .then(function (response) {
-                            that.parentElement.querySelector('p.tagline').insertAdjacentHTML("beforeend", '<span class="tag is-link">' + tagValue + '<button class="delete is-small delete-tag" onclick="deleteTag(this, event)"></button></span>&nbsp;');
+                            that.parentElement.querySelector('p.tagline').insertAdjacentHTML("beforeend", tagTemplate.replace(/@@tag/, tagValue));
                         })
                         .catch(function (error) {
                             console.log(error);
@@ -285,13 +287,18 @@
                 response.data.results.forEach(function (val, index) {
                     var shortURLDomain = val.short_url !== null ? val.short_url.split('/')[0] : "";
                     var shortURLPath = val.short_url !== null ? val.short_url.split('/')[1] : "";
+                    var tagHtml = "";
+                    for (const tag of val.tags) {
+                        tagHtml += tagTemplate.replace(/@@tag/, tag);
+                    }
                     resultsHTML += mediaObjTemplate.replace(/@@image/g, val.image)
                         .replace(/@@title/g, val.title)
                         .replace(/@@short_url_domain/g, shortURLDomain)
                         .replace(/@@short_url_path/g, shortURLPath)
                         .replace(/@@long_url/g, val.long_url)
                         .replace(/@@description/g, val.description)
-                        .replace(/@@id/g, val.id);
+                        .replace(/@@id/g, val.id)
+                        .replace(/@@tags/g, tagHtml);
                 });
                 document.querySelector('#short_urls').innerHTML = resultsHTML;
                 document.querySelectorAll('span.path').forEach(function (element) {
@@ -302,9 +309,6 @@
                 });
                 document.querySelectorAll('button.delete-shorturl').forEach(function (element) {
                     element.addEventListener('click', deleteShortURL, false);
-                });
-                document.querySelectorAll('button.delete-tag').forEach(function (element) {
-                    element.addEventListener('click', deleteTag, false);
                 });
             })
             .catch(function (error) {
