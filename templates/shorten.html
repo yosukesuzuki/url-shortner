@@ -29,30 +29,6 @@
                     </div>
                 </div>
             </div>
-            <div style="visibility: hidden" id="result">
-                <h2>result</h2>
-                <div class="tags has-addons">
-                    <span class="tag is-medium" id="short_url"></span>
-
-                    <span class="tag is-primary" id="copy-short_url">copy</span><span class="copy-status">&nbsp;</span>
-                </div>
-                <article class="media" style="visibility: hidden" id="result-card">
-                    <figure class="media-left">
-                        <p class="image is-64x64">
-                            <img src="http://bulma.io/images/placeholders/128x128.png" id="result-image">
-                        </p>
-                    </figure>
-                    <div class="media-content">
-                        <div class="content">
-                            <p>
-                                <strong id="result-title"></strong>
-                                <br>
-                                <span id="result-description"></span>
-                            </p>
-                        </div>
-                    </div>
-                </article>
-            </div>
         </div>
     </div>
     <div class="columns">
@@ -67,8 +43,6 @@
         pasteTarget.addEventListener('paste', shortenClipboard, false);
         const shortnButtonTarget = document.querySelector('#submit-shorten');
         shortnButtonTarget.addEventListener('click', shortenButton, false);
-        const copyButtonTarget = document.querySelector('#copy-short_url');
-        copyButtonTarget.addEventListener('click', copyShortUrl, false);
 
         function editShortURL(event) {
             event.preventDefault();
@@ -123,19 +97,21 @@
                 .then(function (response) {
                     console.log('Request succeeded with JSON response', response);
                     document.querySelector('#shorten-error-message').innerText = '';
-                    document.querySelector('#short_url').innerHTML =
-                        '<a href="' + longURL + '"><strong><span class="domain">' + response.data.short_url.split('/')[0] + '</span>'
-                        + '/<span class="path" contentEditable="true" onkeypress="onEnterKey(this, event)">' + response.data.short_url.split('/')[1] + '</span></strong></a>';
-                    document.querySelector("#short_url span.path").addEventListener('click', editShortURL, false);
-                    document.querySelector('#result').setAttribute('style', 'visibility: visible');
                     if (response.data.warning !== null) {
                         document.querySelector('#shorten-error-message').innerText = response.data.warning;
                         document.querySelector('#result-card').setAttribute('style', 'visibility: hidden');
                     } else {
-                        document.querySelector('#result-title').innerText = response.data.title;
-                        document.querySelector('#result-description').innerText = response.data.description;
-                        document.querySelector('#result-image').setAttribute('src', response.data.image);
-                        document.querySelector('#result-card').setAttribute('style', 'visibility: visible');
+                        const shortURLDomain = response.data.short_url !== null ? response.data.short_url.split('/')[0] : "";
+                        const shortURLPath = response.data.short_url !== null ? response.data.short_url.split('/')[1] : "";
+                        const resultHTML = mediaObjTemplate.replace(/@@image/g, response.data.image)
+                            .replace(/@@title/g, response.data.title)
+                            .replace(/@@short_url_domain/g, shortURLDomain)
+                            .replace(/@@short_url_path/g, shortURLPath)
+                            .replace(/@@long_url/g, response.data.long_url)
+                            .replace(/@@description/g, response.data.description)
+                            .replace(/@@id/g, response.data.id)
+                            .replace(/@@tags/g, '');
+                        document.querySelector('#short_urls').insertAdjacentHTML('afterbegin', resultHTML);
                     }
                     document.querySelector('div.spinner').setAttribute('style', 'visibility: hidden');
                 })
@@ -144,17 +120,6 @@
                     document.querySelector('#shorten-error-message').innerText = error.response.data.errors.join();
                     document.querySelector('div.spinner').setAttribute('style', 'visibility: hidden');
                 });
-        }
-
-        function copyShortUrl() {
-            const shortURL = document.querySelector('#short_url span.domain').innerText + '/' + document.querySelector('#short_url span.path').innerText;
-            const copyResult = copyToClipboard(shortURL);
-            if (copyResult) {
-                document.querySelector('span.copy-status').innerHTML = '&#10004;';
-                setTimeout(function () {
-                    document.querySelector('span.copy-status').innerHTML = '&nbsp;';
-                }, 10000);
-            }
         }
 
         // from http://www.jomendez.com/2017/01/25/copy-clipboard-using-javascript/
@@ -281,7 +246,7 @@
             const that = element.parentElement;
             const tagValue = that.innerText;
             const shortURL = that.parentElement.parentElement.dataset.shorturl;
-            axios.delete('/api/v1/short_urls/' + shortURL + '/tags/'+ tagValue)
+            axios.delete('/api/v1/short_urls/' + shortURL + '/tags/' + tagValue)
                 .then(function (response) {
                     that.remove();
                 })
@@ -292,7 +257,7 @@
 
         axios.get('/api/v1/short_urls')
             .then(function (response) {
-                let resultsHTML = "<h2>Your short urls</h2>";
+                let resultsHTML = "";
                 response.data.results.forEach(function (val, index) {
                     const shortURLDomain = val.short_url !== null ? val.short_url.split('/')[0] : "";
                     const shortURLPath = val.short_url !== null ? val.short_url.split('/')[1] : "";

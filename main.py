@@ -204,9 +204,15 @@ def shorten(team_id, team_name):
                              site_name=ogp.get('site_name', ''), image=ogp.get('image', '')
                              )
         short_url.put()
-        result = {'short_url': short_url_string, 'title': short_url.title,
+        result = {'short_url': short_url_string,
+                  'title': short_url.title,
+                  'long_url': short_url.long_url,
                   'description': short_url.description,
-                  'image': short_url.image, 'warning': warning}
+                  'image': short_url.image,
+                  'created_at': short_url.created_at.strftime('%Y-%m-%d %H:%M:%S%Z'),
+                  'id': short_url.key.id(),
+                  'warning': warning,
+                  }
         return jsonify(result)
     errors = []
     for field in form:
