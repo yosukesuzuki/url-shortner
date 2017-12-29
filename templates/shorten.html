@@ -63,11 +63,11 @@
 {% endblock %}
 {% block scripts %}
     <script>
-        var pasteTarget = document.querySelector('#long_url');
+        const pasteTarget = document.querySelector('#long_url');
         pasteTarget.addEventListener('paste', shortenClipboard, false);
-        var shortnButtonTarget = document.querySelector('#submit-shorten');
+        const shortnButtonTarget = document.querySelector('#submit-shorten');
         shortnButtonTarget.addEventListener('click', shortenButton, false);
-        var copyButtonTarget = document.querySelector('#copy-short_url');
+        const copyButtonTarget = document.querySelector('#copy-short_url');
         copyButtonTarget.addEventListener('click', copyShortUrl, false);
 
         function editShortURL(event) {
@@ -76,17 +76,17 @@
         }
 
         function shortenButton() {
-            var longURL = document.querySelector('#long_url').value;
+            const longURL = document.querySelector('#long_url').value;
             shorten(longURL);
         }
 
         function shortenClipboard(e) {
-            var longURL = e.clipboardData.getData('Text');
+            const longURL = e.clipboardData.getData('Text');
             shorten(longURL);
         }
 
         function onEnterKey(element, event) {
-            var charCode = (typeof event.which === "number") ? event.which : event.keyCode;
+            const charCode = (typeof event.which === "number") ? event.which : event.keyCode;
             if (charCode == 13) {
                 event.preventDefault();
                 postShortURL(element);
@@ -94,9 +94,9 @@
         }
 
         function postShortURL(element) {
-            var longURL = element.closest('a').href;
-            var domain = element.previousElementSibling.innerText;
-            var customPath = element.innerText;
+            const longURL = element.closest('a').href;
+            const domain = element.previousElementSibling.innerText;
+            const customPath = element.innerText;
             axios.post('/api/v1/shorten', {'domain': domain, 'url': longURL, 'custom_path': customPath})
                 .then(function (response) {
                     console.log('Request succeeded with JSON response', response);
@@ -116,8 +116,8 @@
         }
 
         function shorten(longURL) {
-            var domainElement = document.querySelector('#domain');
-            var domain = domainElement.options[domainElement.selectedIndex].value;
+            const domainElement = document.querySelector('#domain');
+            const domain = domainElement.options[domainElement.selectedIndex].value;
             document.querySelector('div.spinner').setAttribute('style', 'visibility: visible');
             axios.post('/api/v1/shorten', {'domain': domain, 'url': longURL})
                 .then(function (response) {
@@ -147,8 +147,8 @@
         }
 
         function copyShortUrl() {
-            var shortURL = document.querySelector('#short_url span.domain').innerText + '/' + document.querySelector('#short_url span.path').innerText;
-            var copyResult = copyToClipboard(shortURL);
+            const shortURL = document.querySelector('#short_url span.domain').innerText + '/' + document.querySelector('#short_url span.path').innerText;
+            const copyResult = copyToClipboard(shortURL);
             if (copyResult) {
                 document.querySelector('span.copy-status').innerHTML = '&#10004;';
                 setTimeout(function () {
@@ -168,7 +168,7 @@
             }
 
             else if (document.queryCommandSupported && document.queryCommandSupported("copy")) {
-                var textarea = document.createElement("textarea");
+                const textarea = document.createElement("textarea");
                 textarea.textContent = text;
                 textarea.style.position = "fixed";  // Prevent scrolling to bottom of page in MS Edge.
                 document.body.appendChild(textarea);
@@ -184,7 +184,7 @@
             }
         }
 
-        var mediaObjTemplate = `
+        const mediaObjTemplate = `
         <div class="box">
           <article class="media">
             <div class="media-left">
@@ -204,10 +204,10 @@
                 <p>
                     <div class="field has-addons">
                       <div class="control">
-                        <input class="input is-small" type="text" placeholder="input a tag" name="tag">
+                        <input class="input is-small" type="text" placeholder="input a tag" name="tag" onkeypress="addTagOnEnterKey(this, event)">
                       </div>
                       <div class="control">
-                        <button class="button is-small addtag">
+                        <button class="button is-small addtag" onclick="addTag(this, event)">
                           Add Tag +
                         </button>
                       </div>
@@ -218,21 +218,21 @@
               </div>
             </div>
             <div class="media-right">
-              <button class="delete delete-shorturl"></button>
+              <button class="delete delete-shorturl" onclick="deleteShortURL(this, event)"></button>
             </div>
           </article>
         </div>
         `;
 
-        var tagTemplate = `<span class="tag is-link">@@tag<button class="delete is-small delete-tag" onclick="deleteTag(this, event)"></button></span>&nbsp;`;
+        const tagTemplate = `<span class="tag is-link">@@tag<button class="delete is-small delete-tag" onclick="deleteTag(this, event)"></button></span>&nbsp;`;
 
-        function deleteShortURL(event) {
-            const that = this.parentElement.parentElement;
+        function deleteShortURL(element, event) {
+            const that = element.parentElement.parentElement;
             const domain = that.querySelector('span.domain').innerText;
             const path = that.querySelector('span.path').innerText;
             const shortURL = domain + '/' + path;
             if (confirm("delete this short url?") == true) {
-                this.parentElement.parentElement.parentElement.remove();
+                element.parentElement.parentElement.parentElement.remove();
                 axios.delete('/api/v1/short_urls/' + shortURL)
                     .then(function (response) {
                         console.log('delete failed');
@@ -243,11 +243,11 @@
             }
         }
 
-        function addTag(event) {
-            const that = this.parentElement.parentElement;
+        function addTag(element, event) {
+            const that = element.parentElement.parentElement;
             const tag = that.querySelector('input.input');
             const tagValue = tag.value.trim();
-            var duplication = false;
+            let duplication = false;
             if (tagValue != "") {
                 that.parentElement.querySelector('p.tagline').querySelectorAll('span.tag').forEach(function (val, index) {
                     if (val.innerText == tagValue) {
@@ -268,6 +268,15 @@
             }
         }
 
+        function addTagOnEnterKey(element, event) {
+            const charCode = (typeof event.which === "number") ? event.which : event.keyCode;
+            if (charCode == 13) {
+                event.preventDefault();
+                const that = element.parentElement.parentElement.querySelector('button.addtag');
+                addTag(that, event);
+            }
+        }
+
         function deleteTag(element, event) {
             const that = element.parentElement;
             const tagValue = that.innerText;
@@ -283,11 +292,11 @@
 
         axios.get('/api/v1/short_urls')
             .then(function (response) {
-                var resultsHTML = "<h2>Your short urls</h2>";
+                let resultsHTML = "<h2>Your short urls</h2>";
                 response.data.results.forEach(function (val, index) {
-                    var shortURLDomain = val.short_url !== null ? val.short_url.split('/')[0] : "";
-                    var shortURLPath = val.short_url !== null ? val.short_url.split('/')[1] : "";
-                    var tagHtml = "";
+                    const shortURLDomain = val.short_url !== null ? val.short_url.split('/')[0] : "";
+                    const shortURLPath = val.short_url !== null ? val.short_url.split('/')[1] : "";
+                    let tagHtml = "";
                     for (const tag of val.tags) {
                         tagHtml += tagTemplate.replace(/@@tag/, tag);
                     }
@@ -303,12 +312,6 @@
                 document.querySelector('#short_urls').innerHTML = resultsHTML;
                 document.querySelectorAll('span.path').forEach(function (element) {
                     element.addEventListener('click', editShortURL, false);
-                });
-                document.querySelectorAll('button.addtag').forEach(function (element) {
-                    element.addEventListener('click', addTag, false);
-                });
-                document.querySelectorAll('button.delete-shorturl').forEach(function (element) {
-                    element.addEventListener('click', deleteShortURL, false);
                 });
             })
             .catch(function (error) {
