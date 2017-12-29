@@ -218,7 +218,7 @@
               </div>
             </div>
             <div class="media-right">
-              <button class="delete"></button>
+              <button class="delete delete-shorturl"></button>
             </div>
           </article>
         </div>
@@ -241,29 +241,42 @@
             }
         }
 
-        function addTag(event){
+        function addTag(event) {
             const that = this.parentElement.parentElement;
             const tag = that.querySelector('input.input');
             const tagValue = tag.value.trim();
             var duplication = false;
             if (tagValue != "") {
-               that.parentElement.querySelector('p.tagline').querySelectorAll('span.tag').forEach(function(val, index){
-                   if(val.innerText == tagValue){
-                       duplication = true;
-                   }
-               });
-               if(duplication === false) {
-                   const shortURL = that.parentElement.dataset.shorturl;
-                   axios.patch('/api/v1/short_urls/'+shortURL+'/update', {'tag': tagValue})
-                       .then(function (response){
-                           that.parentElement.querySelector('p.tagline').insertAdjacentHTML("beforeend", '<span class="tag is-link">' + tagValue + '<button class="delete is-small"></button></span>&nbsp;');
-                       })
-                       .catch(function (error) {
-                           console.log(error);
-                       });
-               }
-               tag.value = "";
+                that.parentElement.querySelector('p.tagline').querySelectorAll('span.tag').forEach(function (val, index) {
+                    if (val.innerText == tagValue) {
+                        duplication = true;
+                    }
+                });
+                if (duplication === false) {
+                    const shortURL = that.parentElement.dataset.shorturl;
+                    axios.patch('/api/v1/short_urls/' + shortURL, {'tag': tagValue})
+                        .then(function (response) {
+                            that.parentElement.querySelector('p.tagline').insertAdjacentHTML("beforeend", '<span class="tag is-link">' + tagValue + '<button class="delete is-small delete-tag" onclick="deleteTag(this, event)"></button></span>&nbsp;');
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        });
+                }
+                tag.value = "";
             }
+        }
+
+        function deleteTag(element, event) {
+            const that = element.parentElement;
+            const tagValue = that.innerText;
+            const shortURL = that.parentElement.parentElement.dataset.shorturl;
+            axios.delete('/api/v1/short_urls/' + shortURL + '/tags/'+ tagValue)
+                .then(function (response) {
+                    that.remove();
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
         }
 
         axios.get('/api/v1/short_urls')
@@ -287,8 +300,11 @@
                 document.querySelectorAll('button.addtag').forEach(function (element) {
                     element.addEventListener('click', addTag, false);
                 });
-                document.querySelectorAll('button.delete').forEach(function (element) {
+                document.querySelectorAll('button.delete-shorturl').forEach(function (element) {
                     element.addEventListener('click', deleteShortURL, false);
+                });
+                document.querySelectorAll('button.delete-tag').forEach(function (element) {
+                    element.addEventListener('click', deleteTag, false);
                 });
             })
             .catch(function (error) {

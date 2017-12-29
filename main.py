@@ -216,7 +216,7 @@ def shorten(team_id, team_name):
     return make_response(jsonify({'errors': errors}), 400)
 
 
-@app.route('/api/v1/short_urls/<short_url_domain>/<short_url_path>/update', methods=['GET', 'PATCH'])
+@app.route('/api/v1/short_urls/<short_url_domain>/<short_url_path>', methods=['GET', 'PATCH'])
 @team_id_required
 def update_shorten_url(team_id, team_name, short_url_domain, short_url_path):
     user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())

@@ -223,21 +223,21 @@ class ShortenHandlerTest(unittest.TestCase):
                                  follow_redirects=False)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.data)['short_url'], 'jmpt.me/jmptme')
-        patch_response = self.app.patch('/api/v1/short_urls/jmpt.me/jmptme/update',
+        patch_response = self.app.patch('/api/v1/short_urls/jmpt.me/jmptme',
                                         data=json.dumps({'tag': 'testtag', 'memo': 'memo for test'}),
                                         content_type='application/json',
                                         follow_redirects=False)
         self.assertEqual(patch_response.status_code, 200)
         self.assertEqual(json.loads(patch_response.data)['tags'], ['testtag'])
         self.assertEqual(json.loads(patch_response.data)['memo'], 'memo for test')
-        bad_response = self.app.patch('/api/v1/short_urls/jmpt.me/jmptme/update',
+        bad_response = self.app.patch('/api/v1/short_urls/jmpt.me/jmptme',
                                       data=json.dumps({'tag': '', 'memo': ''}),
                                       content_type='application/json',
                                       follow_redirects=False)
         self.assertEqual(bad_response.status_code, 400)
         self.assertEqual(json.loads(bad_response.data)['errors'],
                          ['At least one of Tag and Memo must be set'])
-        patch_response2 = self.app.patch('/api/v1/short_urls/jmpt.me/jmptme/update',
+        patch_response2 = self.app.patch('/api/v1/short_urls/jmpt.me/jmptme',
                                          data=json.dumps({'tag': 'testtag2'}),
                                          content_type='application/json',
                                          follow_redirects=False)
