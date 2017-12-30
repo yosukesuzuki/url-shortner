@@ -44,11 +44,6 @@
         const shortnButtonTarget = document.querySelector('#submit-shorten');
         shortnButtonTarget.addEventListener('click', shortenButton, false);
 
-        function editShortURL(event) {
-            event.preventDefault();
-            this.focus();
-        }
-
         function shortenButton() {
             const longURL = document.querySelector('#long_url').value;
             shorten(longURL);
@@ -155,6 +150,7 @@
                 <p>
                   <strong><span class="domain">@@short_url_domain</span>/<span class="path" contentEditable="true" onkeypress="onEnterKey(this, event)">@@short_url_path</span></strong>
                   <a href="@@long_url">[link]</a>
+                  <a onclick="copyToClipboard('@@short_url_domain/@@short_url_path')">[copy]</a>
                   <h4>@@title</h4>
                   @@description
                 </p>
@@ -267,9 +263,6 @@
                         .replace(/@@tags/g, tagHtml);
                 });
                 document.querySelector('#short_urls').innerHTML = resultsHTML;
-                document.querySelectorAll('span.path').forEach(function (element) {
-                    element.addEventListener('click', editShortURL, false);
-                });
             })
             .catch(function (error) {
                 console.log(error);
