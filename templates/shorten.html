@@ -145,20 +145,15 @@
         const mediaObjTemplate = `
         <div class="box">
           <article class="media">
-            <div class="media-left">
-              <figure class="image is-64x64">
-                <img src="@@image" alt="Image"></a>
-              </figure>
-            </div>
             <div class="media-content">
               <div class="content" data-shorturl="@@short_url_domain/@@short_url_path">
                 <p>
                   <strong>
                       <span class="domain">@@short_url_domain</span>/<span class="path" contentEditable="true" onkeypress="onEnterKey(this, event)">@@short_url_path</span>
-                  </strong>
+                  </strong><br/>
                   <span onclick="editShortURL(this, event)">[edit]</span>
-                  <span onclick="copyToClipboard('@@short_url_domain/@@short_url_path')">[copy]</span>
                   <a href="@@long_url">[link]</a>
+                  <a onclick="copyToClipboard('@@short_url_domain/@@short_url_path')">[copy]</a>
                   <h4>@@title</h4>
                   @@description
                 </p>
@@ -174,6 +169,11 @@
                       </div>
                     </div>
                     <p class="tagline">@@tags</p>
+                </p>
+                <p>
+                  <figure class="image">
+                    <img src="@@image" alt="Image"></a>
+                  </figure>
                 </p>
                 <p><a href="/page/detail/@@id"><u>check detail data</u></a></p>
               </div>
