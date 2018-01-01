@@ -24,9 +24,9 @@ import wtforms_json
 from flask import Flask, render_template, request, redirect, url_for, make_response, jsonify
 from forms import RegistrationForm, LongURLForm, UpdateShortURLForm
 from google.appengine.api import users, memcache
-from google.appengine.ext import ndb
+from google.appengine.ext import ndb, deferred
 from google.appengine.datastore.datastore_query import Cursor
-from models import Team, User, ShortURL, ShortURLID
+from models import Team, User, ShortURL, ShortURLID, Click
 
 wtforms_json.init()
 app = Flask(__name__)
@@ -310,11 +310,30 @@ def shorten_urls(team_id, team_name):
 
 @app.route('/<short_url_path>', methods=['GET'])
 def extract_short_url(short_url_path):
-    short_url = ShortURL.get_by_id("{}_{}".format(request.host, short_url_path))
+    if is_local():
+        host_name = 'jmpt.me'
+    else:
+        host_name = request.host
+    short_url = ShortURL.get_by_id("{}_{}".format(host_name, short_url_path))
     if short_url is None:
         response = make_response(render_template('404.html'), 404)
         return response
-    return redirect(short_url.long_url)
+    deferred.defer(write_click_log,
+                   short_url.key,
+                   request.referrer,
+                   request.remote_addr,
+                   request.user_agent,
+                   request.args)
+    return redirect(short_url.long_url, code=302)
+
+
+def write_click_log(short_url_key, referrer, ip_address, user_agent, get_parameters):
+    click = Click(short_url=short_url_key,
+                  referrer=referrer,
+                  ip_address=ip_address,
+                  user_agent_raw=str(user_agent),
+                  custom_code=get_parameters.get('c'))
+    click.put()
 
 
 @app.errorhandler(500)
