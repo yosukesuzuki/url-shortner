@@ -316,3 +316,22 @@ class ShortURLAPITest(unittest.TestCase):
                                 follow_redirects=False)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.data)['results'][0]['short_url'], 'jmpt.me/02')
+
+    def testCursor(self):
+        for i in range(100, 0, -1):
+            ShortURL(id='jmpt.me_{0:03d}'.format(i), long_url='https://github.com',
+                     short_url='jmpt.me/{0:03d}'.format(i),
+                     team=self.team_key, created_by=self.user_key,
+                     title='test title', description='test description',
+                     site_name='test site', image='').put()
+        self.app.set_cookie('localhost', 'team', str(self.team_id))
+        response = self.app.get('/api/v1/short_urls',
+                                follow_redirects=False)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.data)['results'][0]['short_url'], 'jmpt.me/001')
+        self.assertEqual(len(json.loads(response.data)['results']), 10)
+        self.assertEqual(json.loads(response.data)['more'], True)
+        cursor = json.loads(response.data)['next_cursor']
+        next_response = self.app.get('/api/v1/short_urls?cursor={}'.format(cursor),
+                                     follow_redirects=False)
+        self.assertEqual(json.loads(next_response.data)['results'][0]['short_url'], 'jmpt.me/011')

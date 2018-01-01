@@ -25,6 +25,7 @@ from flask import Flask, render_template, request, redirect, url_for, make_respo
 from forms import RegistrationForm, LongURLForm, UpdateShortURLForm
 from google.appengine.api import users, memcache
 from google.appengine.ext import ndb
+from google.appengine.datastore.datastore_query import Cursor
 from models import Team, User, ShortURL, ShortURLID
 
 wtforms_json.init()
@@ -294,7 +295,8 @@ def shorten_urls(team_id, team_name):
     user_entity = User.get_by_id(user_key_name)
     q = ShortURL.query()
     q = q.filter(ShortURL.team == user_entity.team).order(-ShortURL.created_at)
-    entities = q.fetch(1000)
+    cursor = Cursor(urlsafe=request.args.get('cursor'))
+    entities, next_cursor, more = q.fetch_page(10, start_cursor=cursor)
     results = [{'short_url': e.short_url,
                 'title': e.title,
                 'long_url': e.long_url,
@@ -303,7 +305,7 @@ def shorten_urls(team_id, team_name):
                 'tags': e.tags,
                 'created_at': e.created_at.strftime('%Y-%m-%d %H:%M:%S%Z'),
                 'id': e.key.id()} for e in entities]
-    return jsonify({'results': results})
+    return jsonify({'results': results, 'next_cursor': next_cursor.urlsafe(), 'more': more})
 
 
 @app.route('/<short_url_path>', methods=['GET'])

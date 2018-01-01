@@ -32,6 +32,13 @@
         </div>
     </div>
     <div class="columns">
+        <div class="column is-three-quarters" id="pagination-top">
+            <nav class="pagination" role="navigation" aria-label="pagination">
+                <a class="pagination-next" style="display: none">Next page</a>
+            </nav>
+        </div>
+    </div>
+    <div class="columns">
         <div class="column is-three-quarters" id="short_urls">
 
         </div>
@@ -84,7 +91,7 @@
             document.querySelector('div.spinner').setAttribute('style', 'visibility: visible');
             let payload = {'domain': domain, 'url': longURL};
             if (typeof customPath !== "undefined") {
-               payload['custom_path'] = customPath;
+                payload['custom_path'] = customPath;
             }
             axios.post('/api/v1/shorten', payload)
                 .then(function (response) {
@@ -251,7 +258,15 @@
                 });
         }
 
-        axios.get('/api/v1/short_urls')
+        const urlParams = new URLSearchParams(window.location.search);
+        let requestURL;
+        if (urlParams.has('cursor')) {
+            requestURL = '/api/v1/short_urls?cursor=' + urlParams.get('cursor');
+        } else {
+            requestURL = '/api/v1/short_urls';
+        }
+
+        axios.get(requestURL)
             .then(function (response) {
                 let resultsHTML = "";
                 response.data.results.forEach(function (val, index) {
@@ -271,6 +286,12 @@
                         .replace(/@@tags/g, tagHtml);
                 });
                 document.querySelector('#short_urls').innerHTML = resultsHTML;
+                if (response.data.more) {
+                    document.querySelectorAll('a.pagination-next').forEach(function (el, i) {
+                        el.setAttribute('href', '{{ request.path }}?cursor='+response.data.next_cursor);
+                        el.style.display = 'inline-flex';
+                    });
+                }
             })
             .catch(function (error) {
                 console.log(error);
