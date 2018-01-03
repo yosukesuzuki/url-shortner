@@ -59,6 +59,7 @@ jobs:
             unzip -q -d $HOME ~/repo/google_appengine.zip
             pip install -r requirements.txt -t lib
             pip install pytest
+            pip install webob
             pip install pyyaml
             pip install flake8
             pip install tox
