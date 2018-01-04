@@ -21,6 +21,7 @@ from urlparse import urlparse
 
 import opengraph
 import wtforms_json
+from user_agents import parse
 from flask import Flask, render_template, request, redirect, url_for, make_response, jsonify
 from forms import RegistrationForm, LongURLForm, UpdateShortURLForm
 from google.appengine.api import users, memcache
@@ -322,16 +323,35 @@ def extract_short_url(short_url_path):
                    short_url.key,
                    request.referrer,
                    request.remote_addr,
+                   request.headers.get('X-AppEngine-Country'),
+                   request.headers.get('X-AppEngine-Region'),
+                   request.headers.get('X-AppEngine-City'),
+                   request.headers.get('X-AppEngine-CityLatLong'),
                    request.user_agent,
                    request.args)
     return redirect(short_url.long_url, code=302)
 
 
-def write_click_log(short_url_key, referrer, ip_address, user_agent, get_parameters):
+def write_click_log(short_url_key, referrer, ip_address,
+                    location_country, location_region, location_city, location_lat_long,
+                    user_agent, get_parameters):
+    user_agent_raw = str(user_agent)
+    user_agent = parse(user_agent_raw)
     click = Click(short_url=short_url_key,
                   referrer=referrer,
                   ip_address=ip_address,
-                  user_agent_raw=str(user_agent),
+                  location_country=location_country,
+                  location_region=location_region,
+                  location_city=location_city,
+                  location_lat_long=location_lat_long,
+                  user_agent_raw=user_agent_raw,
+                  user_agent_device=user_agent.device.family,
+                  user_agent_device_brand=user_agent.device.brand,
+                  user_agent_device_model=user_agent.device.model,
+                  user_agent_os=user_agent.os.family,
+                  user_agent_os_version=user_agent.os.version_string,
+                  user_agent_browser=user_agent.browser.family,
+                  user_agent_browser_version=user_agent.browser.version_string,
                   custom_code=get_parameters.get('c'))
     click.put()
 
