@@ -378,7 +378,11 @@ class RedirectLoggingTest(unittest.TestCase):
                  title='test title', description='test description',
                  site_name='test site', image='').put()
         response = self.app.get('/01',
-                                follow_redirects=False, headers={'Host': 'jmpt.me'})
+                                follow_redirects=False,
+                                headers={'Host': 'jmpt.me',
+                                         'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_2_1 like Mac OS X) ' +
+                                                       'AppleWebKit/604.4.7 (KHTML, like Gecko) ' +
+                                                       'Version/11.0 Mobile/15C153 Safari/604.1'})
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.location, 'https://github.com')
         tasks = self.taskqueue_stub.get_filtered_tasks()
@@ -387,3 +391,11 @@ class RedirectLoggingTest(unittest.TestCase):
         deferred.run(task.payload)
         click_results = Click.query().fetch(1000)
         self.assertEquals(click_results[0].short_url.id(), 'jmpt.me_01')
+        self.assertEquals(click_results[0].ip_address, '127.0.0.1')
+        self.assertEquals(click_results[0].user_agent_device, 'iPhone')
+        self.assertEquals(click_results[0].user_agent_device_brand, 'Apple')
+        self.assertEquals(click_results[0].user_agent_device_model, 'iPhone')
+        self.assertEquals(click_results[0].user_agent_os, 'iOS')
+        self.assertEquals(click_results[0].user_agent_os_version, '11.2.1')
+        self.assertEquals(click_results[0].user_agent_browser, 'Mobile Safari')
+        self.assertEquals(click_results[0].user_agent_browser_version, '11')
