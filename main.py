@@ -329,6 +329,7 @@ def extract_short_url(short_url_path):
                    request.headers.get('X-AppEngine-CityLatLong'),
                    request.user_agent,
                    request.args)
+    logging.info(request.headers)
     return redirect(short_url.long_url, code=302)
 
 
