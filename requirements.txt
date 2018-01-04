@@ -6,3 +6,5 @@ WTForms-JSON==0.3.3
 typing==3.6.2
 opengraph==0.5
 mock==2.0.0
+ua-parser==0.7.3
+user-agents==1.0.1
