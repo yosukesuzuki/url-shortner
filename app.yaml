@@ -8,6 +8,8 @@ libraries:
   version: latest
 - name: webob
   version: latest
+- name: ssl
+  version: latest
 
 builtins:
 - appstats: on
@@ -33,6 +35,10 @@ handlers:
   script: main.app
   secure: always
   login: required
+- url: /_admin/.*
+  script: admin.app
+  secure: always
+  login: admin
 - url: /.*
   script: main.app
   secure: always

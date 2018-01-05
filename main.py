@@ -332,6 +332,11 @@ def extract_short_url(short_url_path):
     return redirect(short_url.long_url, code=302)
 
 
+@app.errorhandler(404)
+def handle_404_page(e):
+    return render_template('404.html')
+
+
 @app.errorhandler(500)
 def server_error(e):
     # Log the error and stacktrace.
