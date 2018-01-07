@@ -94,4 +94,3 @@ def create_click_log_table():
         already_message = '"{}" table already exists'.format(table_name)
         logging.info(already_message)
         return already_message
-
