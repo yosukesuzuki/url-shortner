@@ -14,7 +14,7 @@
 
 # [START app]
 from flask import Flask
-from tasks import create_dataset
+from tasks import create_dataset, create_click_log_table
 
 app = Flask(__name__)
 
@@ -22,6 +22,12 @@ app = Flask(__name__)
 @app.route('/_admin/createbq', methods=['GET'])
 def create_bq():
     result = create_dataset()
+    return result, 200
+
+
+@app.route('/_admin/createtable', methods=['GET'])
+def create_table():
+    result = create_click_log_table()
     return result, 200
 
 # [END app]
