@@ -57,6 +57,7 @@ jobs:
             . venv/bin/activate
             python ~/repo/get_latest_sdk.py
             unzip -q -d $HOME ~/repo/google_appengine.zip
+            echo $GCLOUD_CREDENTIAL_DEV > ~/repo/credential.json
             pip install -r requirements.txt -t lib
             pip install pytest
             pip install webob
@@ -84,7 +85,6 @@ jobs:
           name: Deploy to dev environment
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              echo GCLOUD_CREDENTIAL_DEV > ${HOME}/credential.json
               ${HOME}/google_appengine/appcfg.py update . -A $GCLOUD_PROJECT_DEV --oauth2_refresh_token=$GCLOUD_SERVICE_KEY_DEV
             fi
 
