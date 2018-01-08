@@ -67,7 +67,8 @@ def create_dataset():
 
 def create_click_log_table(table_name):
     """
-    create table with YYYYMMDD suffix: -> https://qiita.com/sinmetal/items/63207fe9d74547f986e0#_reference-2f7da1581b396526e6df
+    create table with YYYYMMDD suffix
+    -> https://qiita.com/sinmetal/items/63207fe9d74547f986e0#_reference-2f7da1581b396526e6df
     """
     schema = [
         {'name': 'id', 'type': 'INTEGER', 'mode': 'required'},
@@ -126,5 +127,5 @@ def write_click_log_to_bq(click_key_id):
         'user_agent_browser_version': click.user_agent_browser_version,
         'custom_code': click.custom_code,
     }]
-    inserted = client.push_rows(LOG_DATASET_NAME, table_name, rows, 'id')
+    client.push_rows(LOG_DATASET_NAME, table_name, rows, 'id')
     logging.info('bq insertion done')
