@@ -17,6 +17,15 @@ pip install pytest
 pip install pyyaml
 ```
 
+Run local dev server
+
+```bash
+
+dev_appserver.py . -A your-project-id
+
+```
+
+
 Set python path for local test
 
 ```bash
@@ -40,8 +49,6 @@ PYTHONPATH="./lib:$PYTHONPATH" py.test .
 * user model based on enhancement feature
 * send log to BigQuery
 * datastudio setup
-
-### enhancement
 * group user management
 
 ## data model
