@@ -23,11 +23,11 @@ handlers:
   static_files: favicon.ico
   upload: favicon.ico
   mime_type: image/x-icon
-- url: /func/signin.*
+- url: /page/signin.*
   script: main.app
   secure: always
   login: required
-- url: /func/shorten.*
+- url: /api/v1/.*
   script: main.app
   secure: always
   login: required

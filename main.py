@@ -76,6 +76,7 @@ def index():
     team_id = request.cookies.get('team', False)
     team_setting_id = request.args.get('team', False)
     if team_id is False and team_setting_id is False:
+        logging.info('team_id(cookie) and team_setting_id(GET parameter) are both empty. Render index.html')
         return render_template('index.html')
     domain_settings = [strip_scheme(request.base_url)]
     if is_local():
@@ -83,6 +84,8 @@ def index():
     if team_id is False and team_setting_id:
         team_name = validate_team_user(team_setting_id, users.get_current_user().user_id())
         if team_name:
+            logging.info(
+                'user validation from team_setting_id(GET parameter) is successfully done. Render shorten.html')
             response = make_response(render_template('shorten.html', domain_settings=domain_settings),
                                      team_name=team_name)
             response.set_cookie('team', value=team_setting_id)
@@ -90,6 +93,8 @@ def index():
     if team_id and users.get_current_user():
         team_name = validate_team_user(team_id, users.get_current_user().user_id())
         if team_name:
+            logging.info(
+                'user validation from team_id(cookie) is successfully done. Render shorten.html')
             return render_template('shorten.html', domain_settings=domain_settings, team_name=team_name)
     return render_template('index.html')
 
