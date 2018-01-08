@@ -6,11 +6,23 @@ from user_agents import parse
 from oauth2client.service_account import ServiceAccountCredentials
 from bigquery import get_client, BIGQUERY_SCOPE
 from google.appengine.api import app_identity
+from google.appengine.ext import deferred
 
 from models import Click
 
 # change this
 LOG_DATASET_NAME = 'jmptme'
+
+
+def get_bq_client():
+    app_id = app_identity.get_application_id()
+    credential_file = os.path.join(os.path.dirname(__file__), 'credential.json')
+    with open(credential_file, 'r') as dataFile:
+        credential_dict = json.loads(dataFile.read())
+    credentials = ServiceAccountCredentials.from_json_keyfile_dict(credential_dict,
+                                                                   scopes=BIGQUERY_SCOPE)
+    client = get_client(project_id=app_id, credentials=credentials, readonly=False)
+    return client
 
 
 def write_click_log(short_url_key, referrer, ip_address,
@@ -34,18 +46,8 @@ def write_click_log(short_url_key, referrer, ip_address,
                   user_agent_browser=user_agent.browser.family,
                   user_agent_browser_version=user_agent.browser.version_string,
                   custom_code=get_parameters.get('c'))
-    click.put()
-
-
-def get_bq_client():
-    app_id = app_identity.get_application_id()
-    credential_file = os.path.join(os.path.dirname(__file__), 'credential.json')
-    with open(credential_file, 'r') as dataFile:
-        credential_dict = json.loads(dataFile.read())
-    credentials = ServiceAccountCredentials.from_json_keyfile_dict(credential_dict,
-                                                                   scopes=BIGQUERY_SCOPE)
-    client = get_client(project_id=app_id, credentials=credentials, readonly=False)
-    return client
+    result = click.put()
+    deferred.defer(write_click_log_to_bq, result.id())
 
 
 def create_dataset():
@@ -63,9 +65,12 @@ def create_dataset():
         return already_message
 
 
-def create_click_log_table():
-    table_name = 'click'
+def create_click_log_table(table_name):
+    """
+    create table with YYYYMMDD suffix: -> https://qiita.com/sinmetal/items/63207fe9d74547f986e0#_reference-2f7da1581b396526e6df
+    """
     schema = [
+        {'name': 'id', 'type': 'INTEGER', 'mode': 'required'},
         {'name': 'short_url_id', 'type': 'STRING', 'mode': 'required'},
         {'name': 'referrer', 'type': 'STRING', 'mode': 'nullable'},
         {'name': 'ip_address', 'type': 'STRING', 'mode': 'nullable'},
@@ -94,3 +99,32 @@ def create_click_log_table():
         already_message = '"{}" table already exists'.format(table_name)
         logging.info(already_message)
         return already_message
+
+
+def write_click_log_to_bq(click_key_id):
+    click = Click.get_by_id(click_key_id)
+    table_name = 'click{}'.format(click.created_at.strftime('%Y%m%d'))
+    client = get_bq_client()
+    if client.check_table(LOG_DATASET_NAME, table_name) is False:
+        create_click_log_table(table_name)
+    rows = [{
+        'id': click.key.id(),
+        'short_url_id': click.short_url.id(),
+        'referrer': click.referrer,
+        'ip_address': click.ip_address,
+        'location_country': click.location_country,
+        'location_region': click.location_region,
+        'location_city': click.location_city,
+        'location_lat_long': click.location_lat_long,
+        'user_agent_raw': click.user_agent_raw,
+        'user_agent_device': click.user_agent_device,
+        'user_agent_device_brand': click.user_agent_device_brand,
+        'user_agent_device_model': click.user_agent_device_model,
+        'user_agent_os': click.user_agent_os,
+        'user_agent_os_version': click.user_agent_os_version,
+        'user_agent_browser': click.user_agent_browser,
+        'user_agent_browser_version': click.user_agent_browser_version,
+        'custom_code': click.custom_code,
+    }]
+    inserted = client.push_rows(LOG_DATASET_NAME, table_name, rows, 'id')
+    logging.info('bq insertion done')
