@@ -35,6 +35,10 @@ handlers:
   script: main.app
   secure: always
   login: required
+- url: /page/settings.*
+  script: main.app
+  secure: always
+  login: required
 - url: /_admin/.*
   script: admin.app
   secure: always

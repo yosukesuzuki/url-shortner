@@ -158,7 +158,7 @@ def signout(team_id, team_name):
 @app.route('/page/settings', methods=['GET'])
 @team_id_required
 def settings(team_id, team_name):
-    return render_template('settings.html')
+    return render_template('team_settings.html', team_name=team_name)
 
 
 @app.route('/page/detail/<short_url_id>', methods=['GET'])
