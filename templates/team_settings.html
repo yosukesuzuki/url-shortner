@@ -11,8 +11,18 @@
                 <div class="field">
                     <label class="label">Email</label>
                     <div class="control">
-                        <input class="input" type="email" placeholder="foo@example.com">
+                        <input class="input" type="email" placeholder="foo@example.com" name="email">
                     </div>
+                    {% if form.email.errors %}
+                        {% for e in form.email.errors %}
+                            <p class="help is-danger">{{ e }}</p>
+                        {% endfor %}
+                    {% endif %}
+                    {% if messages %}
+                        {% for message in messages %}
+                          <p class="help is-primary">{{ message }}</p>
+                        {% endfor %}
+                    {% endif %}
                 </div>
                 <div class="field is-grouped">
                     <div class="control">

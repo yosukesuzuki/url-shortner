@@ -129,3 +129,7 @@ def write_click_log_to_bq(click_key_id):
     }]
     client.push_rows(LOG_DATASET_NAME, table_name, rows, 'id')
     logging.info('bq insertion done')
+
+
+def send_invitation(email):
+    logging.info('invitation sent to {}'.format(email))

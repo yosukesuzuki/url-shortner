@@ -22,12 +22,12 @@ from urlparse import urlparse
 import opengraph
 import wtforms_json
 from flask import Flask, render_template, request, redirect, url_for, make_response, jsonify
-from forms import RegistrationForm, LongURLForm, UpdateShortURLForm
+from forms import RegistrationForm, LongURLForm, UpdateShortURLForm, InvitationForm
 from google.appengine.api import users, memcache
 from google.appengine.ext import ndb, deferred
 from google.appengine.datastore.datastore_query import Cursor
 from models import Team, User, ShortURL, ShortURLID
-from tasks import write_click_log
+from tasks import write_click_log, send_invitation
 
 wtforms_json.init()
 app = Flask(__name__)
@@ -155,10 +155,15 @@ def signout(team_id, team_name):
     return response
 
 
-@app.route('/page/settings', methods=['GET'])
+@app.route('/page/settings', methods=['GET', 'POST'])
 @team_id_required
 def settings(team_id, team_name):
-    return render_template('team_settings.html', team_name=team_name)
+    form = InvitationForm(request.form)
+    messages = []
+    if request.method == 'POST' and form.validate():
+        send_invitation(form.email.data)
+        messages.append('Invitation sent')
+    return render_template('team_settings.html', team_name=team_name, form=form, messages=messages)
 
 
 @app.route('/page/detail/<short_url_id>', methods=['GET'])
