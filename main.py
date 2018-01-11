@@ -161,7 +161,7 @@ def settings(team_id, team_name):
     form = InvitationForm(request.form)
     messages = []
     if request.method == 'POST' and form.validate():
-        send_invitation(form.email.data)
+        send_invitation(form.email.data, team_id, users.get_current_user().user_id())
         messages.append('Invitation sent')
     return render_template('team_settings.html', team_name=team_name, form=form, messages=messages)
 

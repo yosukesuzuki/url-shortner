@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+import uuid
 
 from user_agents import parse
 from oauth2client.service_account import ServiceAccountCredentials
@@ -8,7 +9,7 @@ from bigquery import get_client, BIGQUERY_SCOPE
 from google.appengine.api import app_identity
 from google.appengine.ext import deferred
 
-from models import Click
+from models import Click, User, Invitation, Team
 
 # change this
 LOG_DATASET_NAME = 'jmptme'
@@ -131,5 +132,10 @@ def write_click_log_to_bq(click_key_id):
     logging.info('bq insertion done')
 
 
-def send_invitation(email):
+def send_invitation(email, team_id, user_id):
+    user_key_name = "{}_{}".format(team_id, user_id)
+    user_entity = User.get_by_id(user_key_name)
+    team = Team.get_by_id(int(team_id))
+    key_name = uuid.uuid4().hex
+    Invitation(id=key_name, sent_to=email, team=team.key, created_by=user_entity.key).put()
     logging.info('invitation sent to {}'.format(email))
