@@ -151,12 +151,11 @@ def send_invitation(email, team_id, user_id, host):
                     {
                         "email": email
                     }
-                    ],
-                "sub":{
+                ],
+                "sub": {
                     "tema_name": [team.team_name],
                     "invitation_link": [invitation_link]
-                }
-                ,
+                },
                 "subject": "jmpt.me invitation to {} team".format(team.team_name)
             }
         ],
