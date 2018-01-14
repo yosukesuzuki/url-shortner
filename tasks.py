@@ -8,6 +8,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 from bigquery import get_client, BIGQUERY_SCOPE
 from google.appengine.api import app_identity
 from google.appengine.ext import deferred
+import sendgrid
 
 from models import Click, User, Invitation, Team
 
@@ -132,10 +133,45 @@ def write_click_log_to_bq(click_key_id):
     logging.info('bq insertion done')
 
 
-def send_invitation(email, team_id, user_id):
+def send_invitation(email, team_id, user_id, host):
     user_key_name = "{}_{}".format(team_id, user_id)
     user_entity = User.get_by_id(user_key_name)
     team = Team.get_by_id(int(team_id))
     key_name = uuid.uuid4().hex
     Invitation(id=key_name, sent_to=email, team=team.key, created_by=user_entity.key).put()
-    logging.info('invitation sent to {}'.format(email))
+    invitation_link = "{}/page/accept/invitation/{}".format(host, key_name)
+    config_file = os.path.join(os.path.dirname(__file__), 'config.json')
+    with open(config_file, 'r') as configFile:
+        config_dict = json.loads(configFile.read())
+    sg = sendgrid.SendGridAPIClient(apikey=config_dict['sendgrid_api_key'])
+    data = {
+        "personalizations": [
+            {
+                "to": [
+                    {
+                        "email": email
+                    }
+                    ],
+                "sub":{
+                    "tema_name": [team.team_name],
+                    "invitation_link": [invitation_link]
+                }
+                ,
+                "subject": "jmpt.me invitation to {} team".format(team.team_name)
+            }
+        ],
+        "from": {
+            "email": config_dict['sendgrid_from_email'],
+            "name": "jmpt.me invitation"
+        },
+        "content": [
+            {
+                "type": "text/plain",
+                "value": ""
+            }
+        ],
+        "template_id": config_dict['sendgrid_template_id']
+    }
+    response = sg.client.mail.send.post(request_body=data)
+    if response.status_code != 202:
+        logging.error(response.body)

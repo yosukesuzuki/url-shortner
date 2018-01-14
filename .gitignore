@@ -4,5 +4,6 @@ lib
 *.DS_Store
 .tox/*
 credential.json
+config.json
 *.pem
 .cache/*
