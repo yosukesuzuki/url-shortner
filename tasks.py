@@ -139,12 +139,12 @@ def send_invitation(email, team_id, user_id, host):
     team = Team.get_by_id(int(team_id))
     key_name = uuid.uuid4().hex
     Invitation(id=key_name, sent_to=email, team=team.key, created_by=user_entity.key).put()
-    invitation_link = "{}/page/accept/invitation/{}".format(host, key_name)
+    invitation_link = "https://{}/page/accept/invitation/{}".format(host, key_name)
     config_file = os.path.join(os.path.dirname(__file__), 'config.json')
     with open(config_file, 'r') as configFile:
         config_dict = json.loads(configFile.read())
     sg = sendgrid.SendGridAPIClient(apikey=config_dict['sendgrid_api_key'])
-    data = {
+    payload = {
         "personalizations": [
             {
                 "to": [
@@ -152,9 +152,9 @@ def send_invitation(email, team_id, user_id, host):
                         "email": email
                     }
                 ],
-                "sub": {
-                    "tema_name": [team.team_name],
-                    "invitation_link": [invitation_link]
+                "substitutions": {
+                    "%team_name%": team.team_name,
+                    "%invitation_link%": invitation_link
                 },
                 "subject": "jmpt.me invitation to {} team".format(team.team_name)
             }
@@ -163,14 +163,15 @@ def send_invitation(email, team_id, user_id, host):
             "email": config_dict['sendgrid_from_email'],
             "name": "jmpt.me invitation"
         },
-        "content": [
-            {
-                "type": "text/plain",
-                "value": ""
-            }
-        ],
         "template_id": config_dict['sendgrid_template_id']
     }
-    response = sg.client.mail.send.post(request_body=data)
+    try:
+        response = sg.client.mail.send.post(request_body=payload)
+    except Exception as e:
+        logging.error(e.body)
+        return False
     if response.status_code != 202:
         logging.error(response.body)
+        return False
+    else:
+        return True

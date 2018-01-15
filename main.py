@@ -160,10 +160,18 @@ def signout(team_id, team_name):
 def settings(team_id, team_name):
     form = InvitationForm(request.form)
     messages = []
+    errors = []
     if request.method == 'POST' and form.validate():
-        send_invitation(form.email.data, team_id, users.get_current_user().user_id(), request.host)
-        messages.append('Invitation sent')
-    return render_template('team_settings.html', team_name=team_name, form=form, messages=messages)
+        if is_local():
+            host_name = 'jmpt.me'
+        else:
+            host_name = request.host
+        result = send_invitation(form.email.data, team_id, users.get_current_user().user_id(), host_name)
+        if result:
+            messages.append('Invitation sent')
+        else:
+            errors.append('Invitation sent failed')
+    return render_template('team_settings.html', team_name=team_name, form=form, messages=messages, errors=errors)
 
 
 @app.route('/page/detail/<short_url_id>', methods=['GET'])
