@@ -15,6 +15,7 @@
 import json
 import logging
 import unittest
+import mock
 from urlparse import urlparse
 
 from google.appengine.api import users
@@ -24,7 +25,7 @@ from google.appengine.ext import testbed
 from google.appengine.ext import deferred
 from main import app
 from mock import patch
-from models import User, Team, ShortURL, Click
+from models import User, Team, ShortURL, Click, Invitation
 
 
 class MainHandlerTest(unittest.TestCase):
@@ -407,3 +408,55 @@ class RedirectLoggingTest(unittest.TestCase):
         self.assertEquals(click_results[0].user_agent_os_version, '11.2.1')
         self.assertEquals(click_results[0].user_agent_browser, 'Mobile Safari')
         self.assertEquals(click_results[0].user_agent_browser_version, '11')
+
+
+class SendInvitationTest(unittest.TestCase):
+    def setUp(self):
+        self.policy = datastore_stub_util.PseudoRandomHRConsistencyPolicy(probability=1)
+        self.testbed = testbed.Testbed()
+        self.testbed.activate()
+        self.testbed.init_datastore_v3_stub(consistency_policy=self.policy)
+        self.testbed.init_memcache_stub()
+        self.testbed.setup_env(
+            user_email='example@example.com',
+            user_id='1234567890',
+            user_is_admin='1',
+            overwrite=True)
+        self.app = app.test_client()
+        ndb.get_context().clear_cache()
+        new_team = Team(team_name='hoge', billing_plan='trial',
+                        team_domain='ysk')
+        new_team_key = new_team.put()
+        self.team_key = new_team_key
+        new_team = new_team_key.get()
+        new_team_key_id = new_team_key.id()
+        self.team_id = new_team_key_id
+        user_key_name = "{}_{}".format(new_team_key_id, users.get_current_user().user_id())
+        logging.info(user_key_name)
+        new_team_user = User(id=user_key_name, user_name='hoge', team=new_team.key, role='primary_owner',
+                             user=users.get_current_user())
+        new_team_user_key = new_team_user.put()
+        self.user_key = new_team_user_key
+        self.user_id = user_key_name
+
+    def tearDown(self):
+        self.testbed.deactivate()
+
+    @mock.patch('tasks.sendgrid.SendGridAPIClient')
+    def testInvitation(self, send_gric_client_obj):
+        bad_response = self.app.get('/page/settings',
+                                    follow_redirects=False)
+        self.assertEqual(bad_response.status_code, 401)
+        self.assertEqual(json.loads(bad_response.data)['errors'], ['bad request, should have team session data'])
+        self.app.set_cookie('localhost', 'team', str(self.team_id))
+        response = self.app.get('/page/settings',
+                                follow_redirects=False)
+        self.assertEqual(response.status_code, 200)
+        inv_response = self.app.post('/page/settings',
+                                     data={'email': 'invitation@example.com'},
+                                     follow_redirects=False)
+        self.assertEquals(inv_response.status_code, 200)
+        invitations = Invitation.query().order(-Invitation.created_at).fetch(1000)
+        self.assertEqual(invitations[0].sent_to, 'invitation@example.com')
+        self.assertEqual(invitations[0].team, self.team_key)
+        self.assertEqual(invitations[0].created_by, self.user_key)
