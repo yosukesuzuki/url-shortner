@@ -183,7 +183,11 @@ def settings(team_id, team_name):
 def accept_invitation(invitation_id):
     invitation = Invitation.get_by_id(invitation_id)
     if datetime.datetime.now() > invitation.expired_at:
-        return render_template('expired_invitation.html')
+        errors = ['Invitaiton was expired']
+        return render_template('invitation_error.html', errors=errors), 400
+    if invitation.accepted is True:
+        errors = ['Invitaiton was already used']
+        return render_template('invitation_error.html', errors=errors), 400
     user_key_name = "{}_{}".format(invitation.team.id(), users.get_current_user().user_id())
     new_team_user = User(id=user_key_name,
                          user_name=users.get_current_user().nickname(),
@@ -191,6 +195,8 @@ def accept_invitation(invitation_id):
                          team=invitation.team,
                          role='normal',
                          user=users.get_current_user()).put()
+    invitation.accepted = True
+    invitation.put()
     response = make_response(redirect(url_for('index')))
     response.set_cookie('team', value=str(invitation.team.id()))
     return response
