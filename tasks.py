@@ -139,7 +139,7 @@ def send_invitation(email, team_id, user_id, host):
     team = Team.get_by_id(int(team_id))
     key_name = uuid.uuid4().hex
     Invitation(id=key_name, sent_to=email, team=team.key, created_by=user_entity.key).put()
-    invitation_link = "https://{}/page/accept/invitation/{}".format(host, key_name)
+    invitation_link = "https://{}/page/invitation/{}".format(host, key_name)
     config_file = os.path.join(os.path.dirname(__file__), 'config.json')
     with open(config_file, 'r') as configFile:
         config_dict = json.loads(configFile.read())

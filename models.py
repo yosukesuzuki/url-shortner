@@ -25,6 +25,7 @@ class User(ndb.Model):
     """
     user = ndb.UserProperty(required=True)
     user_name = ndb.StringProperty(required=True)  # display name
+    email = ndb.StringProperty(required=True)
     team = ndb.KeyProperty(required=True)
     role = ndb.StringProperty(choices=('primary_owner', 'admin', 'normal'))
     in_use = ndb.BooleanProperty(default=True, required=True)
