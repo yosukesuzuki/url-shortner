@@ -189,12 +189,12 @@ def accept_invitation(invitation_id):
         errors = ['Invitaiton was already used']
         return render_template('invitation_error.html', errors=errors), 400
     user_key_name = "{}_{}".format(invitation.team.id(), users.get_current_user().user_id())
-    new_team_user = User(id=user_key_name,
-                         user_name=users.get_current_user().nickname(),
-                         email=users.get_current_user().email(),
-                         team=invitation.team,
-                         role='normal',
-                         user=users.get_current_user()).put()
+    User(id=user_key_name,
+         user_name=users.get_current_user().nickname(),
+         email=users.get_current_user().email(),
+         team=invitation.team,
+         role='normal',
+         user=users.get_current_user()).put()
     invitation.accepted = True
     invitation.put()
     response = make_response(redirect(url_for('index')))

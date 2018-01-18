@@ -108,7 +108,11 @@ class ShortenHandlerTest(unittest.TestCase):
         self.team_id = new_team_key_id
         user_key_name = "{}_{}".format(new_team_key_id, users.get_current_user().user_id())
         logging.info(user_key_name)
-        new_team_user = User(id=user_key_name, user_name='hoge', team=new_team.key, role='primary_owner',
+        new_team_user = User(id=user_key_name,
+                             user_name='hoge',
+                             email='example@example.com',
+                             team=new_team.key,
+                             role='primary_owner',
                              user=users.get_current_user())
         new_team_user.put()
         self.user_id = user_key_name
@@ -291,7 +295,11 @@ class ShortURLAPITest(unittest.TestCase):
         self.team_id = new_team_key_id
         user_key_name = "{}_{}".format(new_team_key_id, users.get_current_user().user_id())
         logging.info(user_key_name)
-        new_team_user = User(id=user_key_name, user_name='hoge', team=new_team.key, role='primary_owner',
+        new_team_user = User(id=user_key_name,
+                             user_name='hoge',
+                             email='example@example.com',
+                             team=new_team.key,
+                             role='primary_owner',
                              user=users.get_current_user())
         new_team_user_key = new_team_user.put()
         self.user_key = new_team_user_key
@@ -364,7 +372,11 @@ class RedirectLoggingTest(unittest.TestCase):
         self.team_id = new_team_key_id
         user_key_name = "{}_{}".format(new_team_key_id, users.get_current_user().user_id())
         logging.info(user_key_name)
-        new_team_user = User(id=user_key_name, user_name='hoge', team=new_team.key, role='primary_owner',
+        new_team_user = User(id=user_key_name,
+                             user_name='hoge',
+                             email='example@example.com',
+                             team=new_team.key,
+                             role='primary_owner',
                              user=users.get_current_user())
         new_team_user_key = new_team_user.put()
         self.user_key = new_team_user_key
@@ -433,7 +445,11 @@ class SendInvitationTest(unittest.TestCase):
         self.team_id = new_team_key_id
         user_key_name = "{}_{}".format(new_team_key_id, users.get_current_user().user_id())
         logging.info(user_key_name)
-        new_team_user = User(id=user_key_name, user_name='hoge', team=new_team.key, role='primary_owner',
+        new_team_user = User(id=user_key_name,
+                             user_name='hoge',
+                             email='example@example.com',
+                             team=new_team.key,
+                             role='primary_owner',
                              user=users.get_current_user())
         new_team_user_key = new_team_user.put()
         self.user_key = new_team_user_key
