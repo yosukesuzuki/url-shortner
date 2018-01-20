@@ -15,6 +15,7 @@
 # [START app]
 import os
 import logging
+import datetime
 from functools import wraps
 from urllib2 import HTTPError
 from urlparse import urlparse
@@ -22,12 +23,12 @@ from urlparse import urlparse
 import opengraph
 import wtforms_json
 from flask import Flask, render_template, request, redirect, url_for, make_response, jsonify
-from forms import RegistrationForm, LongURLForm, UpdateShortURLForm
+from forms import RegistrationForm, LongURLForm, UpdateShortURLForm, InvitationForm
 from google.appengine.api import users, memcache
 from google.appengine.ext import ndb, deferred
 from google.appengine.datastore.datastore_query import Cursor
-from models import Team, User, ShortURL, ShortURLID
-from tasks import write_click_log
+from models import Team, User, ShortURL, ShortURLID, Invitation
+from tasks import write_click_log, send_invitation
 
 wtforms_json.init()
 app = Flask(__name__)
@@ -107,7 +108,11 @@ def insert_user_and_team(user, form_data):
     new_team = new_team_key.get()
     new_team_key_id = new_team_key.id()
     user_key_name = "{}_{}".format(new_team_key_id, user.user_id())
-    new_team_user = User(id=user_key_name, user_name=form_data.user_name.data, team=new_team.key, role='primary_owner',
+    new_team_user = User(id=user_key_name,
+                         user_name=form_data.user_name.data,
+                         email=user.email(),
+                         team=new_team.key,
+                         role='primary_owner',
                          user=user)
     new_user_key = new_team_user.put()
     new_user_key.get()
@@ -155,10 +160,46 @@ def signout(team_id, team_name):
     return response
 
 
-@app.route('/page/settings', methods=['GET'])
+@app.route('/page/settings', methods=['GET', 'POST'])
 @team_id_required
 def settings(team_id, team_name):
-    return render_template('settings.html')
+    form = InvitationForm(request.form)
+    messages = []
+    errors = []
+    if request.method == 'POST' and form.validate():
+        if is_local():
+            host_name = 'jmpt.me'
+        else:
+            host_name = request.host
+        result = send_invitation(form.email.data, team_id, users.get_current_user().user_id(), host_name)
+        if result:
+            messages.append('Invitation sent')
+        else:
+            errors.append('Invitation sent failed')
+    return render_template('team_settings.html', team_name=team_name, form=form, messages=messages, errors=errors)
+
+
+@app.route('/page/invitation/<invitation_id>', methods=['GET'])
+def accept_invitation(invitation_id):
+    invitation = Invitation.get_by_id(invitation_id)
+    if datetime.datetime.now() > invitation.expired_at:
+        errors = ['Invitaiton was expired']
+        return render_template('invitation_error.html', errors=errors), 400
+    if invitation.accepted is True:
+        errors = ['Invitaiton was already used']
+        return render_template('invitation_error.html', errors=errors), 400
+    user_key_name = "{}_{}".format(invitation.team.id(), users.get_current_user().user_id())
+    User(id=user_key_name,
+         user_name=users.get_current_user().nickname(),
+         email=users.get_current_user().email(),
+         team=invitation.team,
+         role='normal',
+         user=users.get_current_user()).put()
+    invitation.accepted = True
+    invitation.put()
+    response = make_response(redirect(url_for('index')))
+    response.set_cookie('team', value=str(invitation.team.id()))
+    return response
 
 
 @app.route('/page/detail/<short_url_id>', methods=['GET'])

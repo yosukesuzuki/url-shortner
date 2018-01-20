@@ -53,3 +53,8 @@ class UpdateShortURLForm(Form):
             self.tag.errors = [message]
             return False
         return True
+
+
+class InvitationForm(Form):
+    email = StringField('Email', [
+        validators.Email('Invalid email address')])

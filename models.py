@@ -1,3 +1,5 @@
+import datetime
+
 import validators
 from google.appengine.api import datastore_errors
 from google.appengine.ext import ndb
@@ -23,6 +25,7 @@ class User(ndb.Model):
     """
     user = ndb.UserProperty(required=True)
     user_name = ndb.StringProperty(required=True)  # display name
+    email = ndb.StringProperty(required=True)
     team = ndb.KeyProperty(required=True)
     role = ndb.StringProperty(choices=('primary_owner', 'admin', 'normal'))
     in_use = ndb.BooleanProperty(default=True, required=True)
@@ -44,6 +47,20 @@ class Team(ndb.Model):
     in_use = ndb.BooleanProperty(default=True, required=True)
     updated_at = ndb.DateTimeProperty(auto_now=True)
     created_at = ndb.DateTimeProperty(auto_now_add=True)
+
+
+class Invitation(ndb.Model):
+    """
+    key_name = uuid
+
+    """
+    sent_to = ndb.StringProperty(required=True)
+    team = ndb.KeyProperty(required=True)
+    created_by = ndb.KeyProperty(kind=User)
+    accepted = ndb.BooleanProperty(default=False)
+    updated_at = ndb.DateTimeProperty(auto_now=True)
+    created_at = ndb.DateTimeProperty(auto_now_add=True)
+    expired_at = ndb.ComputedProperty(lambda self: self.created_at + datetime.timedelta(days=7))
 
 
 class ShortURL(ndb.Model):

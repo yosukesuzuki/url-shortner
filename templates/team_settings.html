@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block nav %}
+    {% include "nav_for_login.html" %}
+{% endblock %}
+{% block content %}
+    <div class="columns">
+        <div class="is-half column">
+            <h2 class="title">Send invitation</h2>
+            <p>To add user, send email invitation. Email should be associated with Google account</p>
+            <form method="post">
+                <div class="field">
+                    <label class="label">Email</label>
+                    <div class="control">
+                        <input class="input" type="email" placeholder="foo@example.com" name="email">
+                    </div>
+                    {% if form.email.errors %}
+                        {% for e in form.email.errors %}
+                            <p class="help is-danger">{{ e }}</p>
+                        {% endfor %}
+                    {% endif %}
+                    {% if messages %}
+                        {% for message in messages %}
+                          <p class="help is-primary">{{ message }}</p>
+                        {% endfor %}
+                    {% endif %}
+                    {% if errors %}
+                        {% for error in errors %}
+                          <p class="help is-danger">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div class="field is-grouped">
+                    <div class="control">
+                        <button class="button is-primary">Submit</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
