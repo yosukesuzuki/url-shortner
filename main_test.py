@@ -55,7 +55,7 @@ class RegisterHandlerTest(unittest.TestCase):
         self.testbed.setup_env(
             user_email='example@example.com',
             user_id='1234567890',
-            user_is_admin='1',
+            user_is_admin='0',
             overwrite=True)
         self.app = app.test_client()
         ndb.get_context().clear_cache()
@@ -96,7 +96,7 @@ class ShortenHandlerTest(unittest.TestCase):
         self.testbed.setup_env(
             user_email='example@example.com',
             user_id='1234567890',
-            user_is_admin='1',
+            user_is_admin='0',
             overwrite=True)
         self.app = app.test_client()
         ndb.get_context().clear_cache()
@@ -282,7 +282,7 @@ class ShortURLAPITest(unittest.TestCase):
         self.testbed.setup_env(
             user_email='example@example.com',
             user_id='1234567890',
-            user_is_admin='1',
+            user_is_admin='0',
             overwrite=True)
         self.app = app.test_client()
         ndb.get_context().clear_cache()
@@ -359,7 +359,7 @@ class RedirectLoggingTest(unittest.TestCase):
         self.testbed.setup_env(
             user_email='example@example.com',
             user_id='1234567890',
-            user_is_admin='1',
+            user_is_admin='0',
             overwrite=True)
         self.app = app.test_client()
         ndb.get_context().clear_cache()
@@ -432,7 +432,7 @@ class SendInvitationTest(unittest.TestCase):
         self.testbed.setup_env(
             user_email='example@example.com',
             user_id='1234567890',
-            user_is_admin='1',
+            user_is_admin='0',
             overwrite=True)
         self.app = app.test_client()
         ndb.get_context().clear_cache()
@@ -476,3 +476,15 @@ class SendInvitationTest(unittest.TestCase):
         self.assertEqual(invitations[0].sent_to, 'invitation@example.com')
         self.assertEqual(invitations[0].team, self.team_key)
         self.assertEqual(invitations[0].created_by, self.user_key)
+        self.testbed.setup_env(
+            user_email='invitation@example.com',
+            user_id='1234567891',
+            user_is_admin='0',
+            overwrite=True)
+        self.app.get('/page/invitation/{}'.format(invitations[0].key.id()))
+        accepted_invitation = Invitation.get_by_id(invitations[0].key.id())
+        self.assertEquals(accepted_invitation.accepted, True)
+        q = User.query()
+        results = q.filter(User.team == self.team_key).order(-Team.created_at).fetch()
+        self.assertEquals(results[0].email, 'invitation@example.com')
+        self.assertEquals(results[0].role, 'normal')
