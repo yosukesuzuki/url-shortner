@@ -50,11 +50,28 @@
                 </thead>
                 <tbody>
                 {% for user in team_users %}
-                <tr>
-                    <td>{{ user.user_name }}</td>
-                    <td>{{ user.email }}</td>
-                    <td>{{ user.role }}</td>
-                </tr>
+                    <tr>
+                        <td>{{ user.user_name }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                        {% if current_user.role in ('primary_owner', 'admin') %}
+                            <div class="control">
+                                <div class="select">
+                                    <select {% if user.role == 'primary_owner' %}disabled="disabled"{% endif %}>
+                                        <option value="{{ user.role }}">{{ user.role }}</option>
+                                        {% for r in ['admin', 'normal'] %}
+                                            {% if r != user.role %}
+                                            <option value="{{ r }}">{{ r }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        {% else %}
+                            {{ user.role }}
+                        {% endif %}
+                        </td>
+                    </tr>
                 {% endfor %}
                 </tbody>
             </table>
