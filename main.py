@@ -166,6 +166,7 @@ def settings(team_id, team_name):
     form = InvitationForm(request.form)
     messages = []
     errors = []
+    team_users = User.query().filter(User.team == Team.get_by_id(int(team_id)).key).order(-Team.created_at).fetch()
     if request.method == 'POST' and form.validate():
         if is_local():
             host_name = 'jmpt.me'
@@ -176,7 +177,8 @@ def settings(team_id, team_name):
             messages.append('Invitation sent')
         else:
             errors.append('Invitation sent failed')
-    return render_template('team_settings.html', team_name=team_name, form=form, messages=messages, errors=errors)
+    return render_template('team_settings.html', team_name=team_name, team_users=team_users, form=form,
+                           messages=messages, errors=errors)
 
 
 @app.route('/page/invitation/<invitation_id>', methods=['GET'])

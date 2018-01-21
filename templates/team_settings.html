@@ -20,12 +20,12 @@
                     {% endif %}
                     {% if messages %}
                         {% for message in messages %}
-                          <p class="help is-primary">{{ message }}</p>
+                            <p class="help is-primary">{{ message }}</p>
                         {% endfor %}
                     {% endif %}
                     {% if errors %}
                         {% for error in errors %}
-                          <p class="help is-danger">{{ error }}</p>
+                            <p class="help is-danger">{{ error }}</p>
                         {% endfor %}
                     {% endif %}
                 </div>
@@ -35,6 +35,29 @@
                     </div>
                 </div>
             </form>
+        </div>
+    </div>
+    <div class="columns">
+        <div class="is-half column">
+            <h2 class="title">{{ team_name }} Team Users</h2>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>User Name</th>
+                    <th>User Email</th>
+                    <th>Role</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for user in team_users %}
+                <tr>
+                    <td>{{ user.user_name }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.role }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 {% endblock %}
