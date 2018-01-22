@@ -58,3 +58,8 @@ class UpdateShortURLForm(Form):
 class InvitationForm(Form):
     email = StringField('Email', [
         validators.Email('Invalid email address')])
+
+
+class RoleForm(Form):
+    role = StringField('Role', [validators.AnyOf(values=['admin', 'normal'], message='role should be admin or normal')])
+    user_id = StringField('User ID', [validators.Length(min=3, message='User ID too short')])

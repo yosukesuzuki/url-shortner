@@ -46,6 +46,7 @@
                     <th>User Name</th>
                     <th>User Email</th>
                     <th>Role</th>
+                    <th>Created</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -57,7 +58,9 @@
                         {% if current_user.role in ('primary_owner', 'admin') %}
                             <div class="control">
                                 <div class="select">
-                                    <select {% if user.role == 'primary_owner' %}disabled="disabled"{% endif %}>
+                                    <form method="post" action="/page/role">
+                                    <input type="hidden" value="{{ user.key.id() }}" name="user_id">
+                                    <select {% if user.role == 'primary_owner' %}disabled="disabled"{% endif %} name="role" onchange="this.form.submit()">
                                         <option value="{{ user.role }}">{{ user.role }}</option>
                                         {% for r in ['admin', 'normal'] %}
                                             {% if r != user.role %}
@@ -65,11 +68,15 @@
                                             {% endif %}
                                         {% endfor %}
                                     </select>
+                                    </form>
                                 </div>
                             </div>
                         {% else %}
                             {{ user.role }}
                         {% endif %}
+                        </td>
+                        <td>
+                            {{ user.created_at }}
                         </td>
                     </tr>
                 {% endfor %}
