@@ -21,3 +21,9 @@ indexes:
   - name: team
   - name: created_at
     direction: desc
+
+- kind: User
+  properties:
+  - name: team
+  - name: created_at
+    direction: desc

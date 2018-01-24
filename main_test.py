@@ -488,3 +488,70 @@ class SendInvitationTest(unittest.TestCase):
         results = q.filter(User.team == self.team_key).order(-Team.created_at).fetch()
         self.assertEquals(results[0].email, 'invitation@example.com')
         self.assertEquals(results[0].role, 'normal')
+
+
+class ChangeRoleTest(unittest.TestCase):
+    def setUp(self):
+        self.policy = datastore_stub_util.PseudoRandomHRConsistencyPolicy(probability=1)
+        self.testbed = testbed.Testbed()
+        self.testbed.activate()
+        self.testbed.init_datastore_v3_stub(consistency_policy=self.policy)
+        self.testbed.init_memcache_stub()
+        self.testbed.setup_env(
+            user_email='example@example.com',
+            user_id='1234567890',
+            user_is_admin='0',
+            overwrite=True)
+        self.app = app.test_client()
+        ndb.get_context().clear_cache()
+        new_team = Team(team_name='hoge', billing_plan='trial',
+                        team_domain='ysk')
+        new_team_key = new_team.put()
+        self.team_key = new_team_key
+        new_team = new_team_key.get()
+        new_team_key_id = new_team_key.id()
+        self.team_id = new_team_key_id
+        user_key_name = "{}_{}".format(new_team_key_id, users.get_current_user().user_id())
+        logging.info(user_key_name)
+        new_team_user = User(id=user_key_name,
+                             user_name='hoge',
+                             email='example@example.com',
+                             team=new_team.key,
+                             role='primary_owner',
+                             user=users.get_current_user())
+        new_team_user_key = new_team_user.put()
+        self.user_key = new_team_user_key
+        self.user_id = user_key_name
+        self.testbed.setup_env(
+            user_email='invitation@example.com',
+            user_id='1234567891',
+            user_is_admin='0',
+            overwrite=True)
+        inv_key_name = "{}_{}".format(new_team_key_id, '1234567891')
+        inv_team_user = User(id=inv_key_name,
+                             user_name='inv user',
+                             email='invitation@example.com',
+                             team=new_team.key,
+                             role='normal',
+                             user=users.get_current_user())
+        inv_team_user.put()
+
+    def tearDown(self):
+        self.testbed.deactivate()
+
+    def test_change_role(self):
+        self.testbed.setup_env(
+            user_email='example@example.com',
+            user_id='1234567890',
+            user_is_admin='0',
+            overwrite=True)
+        self.app.set_cookie('localhost', 'team', str(self.team_id))
+        response = self.app.get('/page/settings',
+                                follow_redirects=False)
+        self.assertEqual(response.status_code, 200)
+        role_response = self.app.post('/page/role',
+                                      data={'user_id': '{}_1234567891'.format(self.team_id), 'role': 'admin'},
+                                      follow_redirects=False)
+        self.assertEquals(role_response.status_code, 302)
+        users = User.query().filter(User.team == self.team_key).order(-User.created_at).fetch()
+        self.assertEquals(users[0].role, 'admin')
