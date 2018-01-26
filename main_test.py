@@ -489,6 +489,27 @@ class SendInvitationTest(unittest.TestCase):
         self.assertEquals(results[0].email, 'invitation@example.com')
         self.assertEquals(results[0].role, 'normal')
 
+    @mock.patch('tasks.sendgrid.SendGridAPIClient')
+    def testExistUserInvitation(self, send_gric_client_obj):
+        bad_response = self.app.get('/page/settings',
+                                    follow_redirects=False)
+        self.assertEqual(bad_response.status_code, 401)
+        self.assertEqual(json.loads(bad_response.data)['errors'], ['bad request, should have team session data'])
+        self.app.set_cookie('localhost', 'team', str(self.team_id))
+        response = self.app.get('/page/settings',
+                                follow_redirects=False)
+        self.assertEqual(response.status_code, 200)
+        inv_response = self.app.post('/page/settings',
+                                     data={'email': 'invitation@example.com'},
+                                     follow_redirects=False)
+        self.assertEquals(inv_response.status_code, 200)
+        invitations = Invitation.query().order(-Invitation.created_at).fetch(1000)
+        self.assertEqual(invitations[0].sent_to, 'invitation@example.com')
+        self.assertEqual(invitations[0].team, self.team_key)
+        self.assertEqual(invitations[0].created_by, self.user_key)
+        invalid_accept = self.app.get('/page/invitation/{}'.format(invitations[0].key.id()))
+        self.assertEquals(invalid_accept.status_code, 400)
+
 
 class ChangeRoleTest(unittest.TestCase):
     def setUp(self):
