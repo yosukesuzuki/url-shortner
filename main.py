@@ -189,6 +189,13 @@ def accept_invitation(invitation_id):
         errors = ['Invitaiton was already used']
         return render_template('invitation_error.html', errors=errors), 400
     user_key_name = "{}_{}".format(invitation.team.id(), users.get_current_user().user_id())
+    q = User.query()
+    q = q.filter(User.team == Team.get(invitation.team))
+    q = q.filter(User.email == users.get_current_user().email())
+    results = q.fetch(1000)
+    if len(results) > 0:
+        errors = ['Your email account already exist in team']
+        return render_template('invitation_error.html', errors=errors), 400
     User(id=user_key_name,
          user_name=users.get_current_user().nickname(),
          email=users.get_current_user().email(),
