@@ -390,7 +390,7 @@ def shorten_urls(team_id, team_name):
                 'tags': e.tags,
                 'created_at': e.created_at.strftime('%Y-%m-%d %H:%M:%S%Z'),
                 'id': e.key.id()} for e in entities]
-    return jsonify({'results': results, 'next_cursor': next_cursor.urlsafe(), 'more': more})
+    return jsonify({'results': results, 'next_cursor': next_cursor.urlsafe() if next_cursor else None, 'more': more})
 
 
 @app.route('/<short_url_path>', methods=['GET'])
