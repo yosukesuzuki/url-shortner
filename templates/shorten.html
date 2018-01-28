@@ -108,7 +108,6 @@
                             .replace(/@@short_url_domain/g, shortURLDomain)
                             .replace(/@@short_url_path/g, shortURLPath)
                             .replace(/@@long_url/g, response.data.long_url)
-                            .replace(/@@description/g, response.data.description)
                             .replace(/@@id/g, response.data.id)
                             .replace(/@@tags/g, '');
                         document.querySelector('#short_urls').insertAdjacentHTML('afterbegin', resultHTML);
@@ -157,12 +156,13 @@
                 <p>
                   <strong>
                       <span class="domain">@@short_url_domain</span>/<span class="path" contentEditable="true" onkeypress="onEnterKey(this, event)">@@short_url_path</span>
-                  </strong><br/>
-                  <span onclick="editShortURL(this, event)">[edit]</span>
-                  <a href="@@long_url">[link]</a>
-                  <a onclick="copyToClipboard('@@short_url_domain/@@short_url_path')">[copy]</a>
+                  </strong><br />
+                  <span>@@long_url</span><br />
+                  <span onclick="editShortURL(this, event)" class="button is-small">edit</span>
+                  <a href="@@long_url" target="_blank" class="button is-small">link</a>
+                  <a onclick="copyToClipboard('@@short_url_domain/@@short_url_path')" class="button is-small">copy</a>
+                  <a href="/page/detail/@@id" class="button is-small">click data</a>
                   <h4>@@title</h4>
-                  @@description
                 </p>
                 <p>
                     <div class="field has-addons">
@@ -177,12 +177,11 @@
                     </div>
                     <p class="tagline">@@tags</p>
                 </p>
-                <p>
+                <!--p>
                   <figure class="image">
                     <img src="@@image" alt="Image"></a>
                   </figure>
-                </p>
-                <p><a href="/page/detail/@@id"><u>check detail data</u></a></p>
+                </p-->
               </div>
             </div>
             <div class="media-right">
