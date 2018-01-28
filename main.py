@@ -87,8 +87,8 @@ def index():
         if team_name:
             logging.info(
                 'user validation from team_setting_id(GET parameter) is successfully done. Render shorten.html')
-            response = make_response(render_template('shorten.html', domain_settings=domain_settings),
-                                     team_name=team_name)
+            response = make_response(render_template('shorten.html', domain_settings=domain_settings,
+                                     team_name=team_name))
             response.set_cookie('team', value=team_setting_id)
             return response
     if team_id and users.get_current_user():
@@ -283,6 +283,9 @@ def shorten(team_id, team_name):
         except HTTPError:
             ogp = {'title': '', 'description': '', 'site_name': '', 'image': ''}
             warning = 'cannot look up URL, is this right URL?'
+        except KeyError:
+            ogp = {'title': '', 'description': '', 'site_name': '', 'image': ''}
+            warning = 'cannot parse OGP data'
         short_url_string = "{}/{}".format(form.domain.data, path)
         short_url = ShortURL(id=key_name, long_url=form.url.data, short_url=short_url_string,
                              team=user_entity.team, updated_by=user_entity.key, created_by=user_entity.key,
