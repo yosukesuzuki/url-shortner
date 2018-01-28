@@ -248,7 +248,7 @@ def detail(team_id, team_name, short_url_id):
     short_url = ShortURL.get_by_id(short_url_id)
     if short_url.team != user_entity.team:
         return make_response(jsonify({'errors': ['you can not edit this short url']}), 401)
-    return render_template('detail.html', short_url=short_url)
+    return render_template('detail.html', short_url=short_url, team_name=team_name)
 
 
 def generate_short_url_path(long_url):  # type: (str) -> str
