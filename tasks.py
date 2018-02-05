@@ -2,6 +2,8 @@ import os
 import json
 import logging
 import uuid
+import random
+import datetime
 
 from user_agents import parse
 from oauth2client.service_account import ServiceAccountCredentials
@@ -10,7 +12,7 @@ from google.appengine.api import app_identity
 from google.appengine.ext import deferred
 import sendgrid
 
-from models import Click, User, Invitation, Team
+from models import Click, User, Invitation, Team, ShortURL
 
 # change this
 LOG_DATASET_NAME = 'jmptme'
@@ -175,3 +177,42 @@ def send_invitation(email, team_id, user_id, host):
         return False
     else:
         return True
+
+
+def create_click_log_data(team_user):
+    q = ShortURL.query()
+    q = q.filter(ShortURL.team == team_user.team).order(-ShortURL.created_at)
+    short_url = q.fetch(1)[0]
+    refferrers = [
+        'https://www.google.co.jp/search',
+        'https://twitter.com/',
+        'https://www.facebook.com/',
+    ]
+    uas = [
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_3) AppleWebKit/537.36 (KHTML, like Gecko) '
+        'Chrome/63.0.3239.132 Safari/537.36',
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 11_2_1 like Mac OS X) AppleWebKit/604.4.7 (KHTML, like Gecko) '
+        'Version/11.0 Mobile/15C153 Safari/604.1',
+    ]
+    for i in range(200):
+        user_agent_raw = random.choice(uas)
+        user_agent = parse(user_agent_raw)
+        click = Click(short_url=short_url.key,
+                      referrer=random.choice(refferrers),
+                      ip_address='192.168.0.200',
+                      location_country='JP',
+                      location_region='13',
+                      location_city='shinjuku',
+                      location_lat_long='35.693840,139.703549',
+                      user_agent_raw=user_agent_raw,
+                      user_agent_device=user_agent.device.family,
+                      user_agent_device_brand=user_agent.device.brand,
+                      user_agent_device_model=user_agent.device.model,
+                      user_agent_os=user_agent.os.family,
+                      user_agent_os_version=user_agent.os.version_string,
+                      user_agent_browser=user_agent.browser.family,
+                      user_agent_browser_version=user_agent.browser.version_string,
+                      custom_code=None,
+                      created_at=datetime.datetime.now() + datetime.timedelta(days=random.randint(-90, 0)))
+        click.put()
+    return True

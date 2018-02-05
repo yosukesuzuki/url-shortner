@@ -13,8 +13,11 @@
 # limitations under the License.
 
 # [START app]
-from flask import Flask
-from tasks import create_dataset, create_click_log_table
+from flask import Flask, request
+from google.appengine.api import users
+from models import User
+from tasks import create_dataset, create_click_log_data
+from main import team_id_required
 
 app = Flask(__name__)
 
@@ -25,9 +28,13 @@ def create_bq():
     return result, 200
 
 
-@app.route('/_admin/createtable', methods=['GET'])
-def create_table():
-    result = create_click_log_table()
+@app.route('/_admin/createtestdata', methods=['GET'])
+def create_test_data():
+    team_id = request.cookies.get('team', False)
+    user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
+    user_entity = User.get_by_id(user_key_name)
+    result = create_click_log_data(user_entity)
     return result, 200
+
 
 # [END app]
