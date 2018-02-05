@@ -17,7 +17,6 @@ from flask import Flask, request
 from google.appengine.api import users
 from models import User
 from tasks import create_dataset, create_click_log_data
-from main import team_id_required
 
 app = Flask(__name__)
 
