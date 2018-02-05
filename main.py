@@ -27,7 +27,7 @@ from forms import RegistrationForm, LongURLForm, UpdateShortURLForm, InvitationF
 from google.appengine.api import users, memcache
 from google.appengine.ext import ndb, deferred
 from google.appengine.datastore.datastore_query import Cursor
-from models import Team, User, ShortURL, ShortURLID, Invitation
+from models import Team, User, ShortURL, ShortURLID, Invitation, Click
 from tasks import write_click_log, send_invitation
 
 wtforms_json.init()
@@ -88,7 +88,7 @@ def index():
             logging.info(
                 'user validation from team_setting_id(GET parameter) is successfully done. Render shorten.html')
             response = make_response(render_template('shorten.html', domain_settings=domain_settings,
-                                     team_name=team_name))
+                                                     team_name=team_name))
             response.set_cookie('team', value=team_setting_id)
             return response
     if team_id and users.get_current_user():
@@ -394,6 +394,33 @@ def shorten_urls(team_id, team_name):
                 'created_at': e.created_at.strftime('%Y-%m-%d %H:%M:%S%Z'),
                 'id': e.key.id()} for e in entities]
     return jsonify({'results': results, 'next_cursor': next_cursor.urlsafe() if next_cursor else None, 'more': more})
+
+
+@app.route('/api/v1/data/<short_url_path>', methods=['GET'])
+@team_id_required
+def data_short_url(team_id, team_name, short_url_path):
+    if is_local():
+        host_name = 'jmpt.me'
+    else:
+        host_name = request.host
+    short_url = ShortURL.get_by_id("{}_{}".format(host_name, short_url_path))
+    if short_url is None:
+        return make_response(jsonify({'errors': ['data not found']}), 404)
+    if str(short_url.team.id()) != str(team_id):
+        return make_response(jsonify({'errors': ['you can not access to this data']}), 400)
+    q = Click.query()
+    q.filter(Click.short_url == short_url.key).order(Click.created_at)
+    clicks = q.fetch(1000)
+    results = []
+    for c in clicks:
+        results.append({
+            'referrer_medium': c.referrer_medium,
+            'location_country': c.location_country,
+            'user_agent_device': c.user_agent_device,
+            'user_agent_browser': c.user_agent_browser,
+            'created_at': c.created_at.isoformat(),
+        })
+    return make_response(jsonify({'results': results}), 200)
 
 
 @app.route('/<short_url_path>', methods=['GET'])

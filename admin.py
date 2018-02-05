@@ -32,7 +32,7 @@ def create_test_data():
     team_id = request.cookies.get('team', False)
     user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
     user_entity = User.get_by_id(user_key_name)
-    result = create_click_log_data(user_entity)
+    result = create_click_log_data(user_entity.team)
     return result, 200
 
 
