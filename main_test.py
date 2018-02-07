@@ -424,6 +424,12 @@ class RedirectLoggingTest(unittest.TestCase):
         self.assertEquals(click_results[0].referrer, 'https://www.google.co.jp/search')
         self.assertEquals(click_results[0].referrer_name, 'Google')
         self.assertEquals(click_results[0].referrer_medium, 'search')
+        self.app.set_cookie('localhost', 'team', str(self.team_id))
+        api_response = self.app.get('/api/v1/data/01',
+                                    follow_redirects=False,
+                                    headers={'Host': 'jmpt.me'})
+        self.assertEqual(api_response.status_code, 200)
+        self.assertEqual(json.loads(api_response.data)['results'][0]['referrer_medium'], 'search')
 
 
 class SendInvitationTest(unittest.TestCase):

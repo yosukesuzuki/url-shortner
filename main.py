@@ -411,15 +411,13 @@ def data_short_url(team_id, team_name, short_url_path):
     q = Click.query()
     q.filter(Click.short_url == short_url.key).order(Click.created_at)
     clicks = q.fetch(1000)
-    results = []
-    for c in clicks:
-        results.append({
-            'referrer_medium': c.referrer_medium,
-            'location_country': c.location_country,
-            'user_agent_device': c.user_agent_device,
-            'user_agent_browser': c.user_agent_browser,
-            'created_at': c.created_at.isoformat(),
-        })
+    results = [{
+        'referrer_medium': c.referrer_medium,
+        'location_country': c.location_country,
+        'user_agent_device': c.user_agent_device,
+        'user_agent_browser': c.user_agent_browser,
+        'created_at': c.created_at.isoformat(),
+    } for c in clicks]
     return make_response(jsonify({'results': results}), 200)
 
 
