@@ -250,6 +250,8 @@ def detail(team_id, team_name, short_url_path):
     user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
     user_entity = User.get_by_id(user_key_name)
     short_url = ShortURL.get_by_id("{}_{}".format(host_name, short_url_path))
+    if short_url is None:
+        return make_response(render_template('404.html'), 404)
     if short_url.team != user_entity.team:
         return make_response(jsonify({'errors': ['you can not edit this short url']}), 401)
     return render_template('detail.html', short_url=short_url, team_name=team_name, short_url_path=short_url_path)

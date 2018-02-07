@@ -212,7 +212,8 @@ class ShortenHandlerTest(unittest.TestCase):
                                        follow_redirects=False)
         self.assertEqual(response_strip.status_code, 200)
         self.assertEqual(json.loads(response_strip.data)['short_url'], 'jmpt.me/jmptme1')
-        response_detail = self.app.get('/page/detail/jmpt.me_jmptme1')
+        response_detail = self.app.get('/page/detail/jmptme',
+                                       headers={'Host': 'jmpt.me'})
         self.assertEqual(response_detail.status_code, 200)
 
     @patch('opengraph.OpenGraph')
