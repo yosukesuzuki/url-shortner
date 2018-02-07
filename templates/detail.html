@@ -37,6 +37,21 @@
     </div>
 {% endblock %}
 {% block scripts %}
+   <!-- Load c3.css -->
+<link href="/_assets/c3.css" rel="stylesheet">
+
+<!-- Load d3.js and c3.js -->
+<script src="/_assets/d3.min.js" charset="utf-8"></script>
+<script src="/_assets/c3.min.js"></script>
     <script>
+    const requestURL = '/api/v1/data/{{ short_url_path }}';
+        axios.get(requestURL)
+            .then(function (response) {
+                console.log(response.data.results);
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
     </script>
+
 {% endblock %}

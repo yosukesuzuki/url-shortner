@@ -240,15 +240,19 @@ def accept_invitation(invitation_id):
     return response
 
 
-@app.route('/page/detail/<short_url_id>', methods=['GET'])
+@app.route('/page/detail/<short_url_path>', methods=['GET'])
 @team_id_required
-def detail(team_id, team_name, short_url_id):
+def detail(team_id, team_name, short_url_path):
+    if is_local():
+        host_name = 'jmpt.me'
+    else:
+        host_name = request.host
     user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
     user_entity = User.get_by_id(user_key_name)
-    short_url = ShortURL.get_by_id(short_url_id)
+    short_url = ShortURL.get_by_id("{}_{}".format(host_name, short_url_path))
     if short_url.team != user_entity.team:
         return make_response(jsonify({'errors': ['you can not edit this short url']}), 401)
-    return render_template('detail.html', short_url=short_url, team_name=team_name)
+    return render_template('detail.html', short_url=short_url, team_name=team_name, short_url_path=short_url_path)
 
 
 def generate_short_url_path(long_url):  # type: (str) -> str

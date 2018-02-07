@@ -23,6 +23,9 @@ handlers:
   static_files: favicon.ico
   upload: favicon.ico
   mime_type: image/x-icon
+- url: /_assets/
+  static_dir: assets/
+  expiration: "1m"
 - url: /page/signin.*
   script: main.app
   secure: always
