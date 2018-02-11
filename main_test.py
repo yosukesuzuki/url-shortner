@@ -430,7 +430,7 @@ class RedirectLoggingTest(unittest.TestCase):
                                     follow_redirects=False,
                                     headers={'Host': 'jmpt.me'})
         self.assertEqual(api_response.status_code, 200)
-        self.assertEqual(json.loads(api_response.data)['results'][0]['referrer_medium'], 'search')
+        self.assertEqual(json.loads(api_response.data)['results'][0]['data'][0]['referrer_medium'], 'search')
 
 
 class SendInvitationTest(unittest.TestCase):
