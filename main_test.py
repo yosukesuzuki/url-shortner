@@ -212,7 +212,8 @@ class ShortenHandlerTest(unittest.TestCase):
                                        follow_redirects=False)
         self.assertEqual(response_strip.status_code, 200)
         self.assertEqual(json.loads(response_strip.data)['short_url'], 'jmpt.me/jmptme1')
-        response_detail = self.app.get('/page/detail/jmpt.me_jmptme1')
+        response_detail = self.app.get('/page/detail/jmptme',
+                                       headers={'Host': 'jmpt.me'})
         self.assertEqual(response_detail.status_code, 200)
 
     @patch('opengraph.OpenGraph')
@@ -393,6 +394,7 @@ class RedirectLoggingTest(unittest.TestCase):
         response = self.app.get('/01',
                                 follow_redirects=False,
                                 headers={'Host': 'jmpt.me',
+                                         'Referer': 'https://www.google.co.jp/search',
                                          'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_2_1 like Mac OS X) ' +
                                                        'AppleWebKit/604.4.7 (KHTML, like Gecko) ' +
                                                        'Version/11.0 Mobile/15C153 Safari/604.1',
@@ -420,6 +422,15 @@ class RedirectLoggingTest(unittest.TestCase):
         self.assertEquals(click_results[0].user_agent_os_version, '11.2.1')
         self.assertEquals(click_results[0].user_agent_browser, 'Mobile Safari')
         self.assertEquals(click_results[0].user_agent_browser_version, '11')
+        self.assertEquals(click_results[0].referrer, 'https://www.google.co.jp/search')
+        self.assertEquals(click_results[0].referrer_name, 'Google')
+        self.assertEquals(click_results[0].referrer_medium, 'search')
+        self.app.set_cookie('localhost', 'team', str(self.team_id))
+        api_response = self.app.get('/api/v1/data/01',
+                                    follow_redirects=False,
+                                    headers={'Host': 'jmpt.me'})
+        self.assertEqual(api_response.status_code, 200)
+        self.assertEqual(json.loads(api_response.data)['results'][0]['data'][0]['referrer_medium'], 'search')
 
 
 class SendInvitationTest(unittest.TestCase):

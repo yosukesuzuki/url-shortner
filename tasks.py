@@ -2,6 +2,8 @@ import os
 import json
 import logging
 import uuid
+import random
+import datetime
 
 from user_agents import parse
 from oauth2client.service_account import ServiceAccountCredentials
@@ -9,8 +11,9 @@ from bigquery import get_client, BIGQUERY_SCOPE
 from google.appengine.api import app_identity
 from google.appengine.ext import deferred
 import sendgrid
+from referer_parser import Referer
 
-from models import Click, User, Invitation, Team
+from models import Click, User, Invitation, Team, ShortURL
 
 # change this
 LOG_DATASET_NAME = 'jmptme'
@@ -32,8 +35,17 @@ def write_click_log(short_url_key, referrer, ip_address,
                     user_agent, get_parameters):
     user_agent_raw = str(user_agent)
     user_agent = parse(user_agent_raw)
+    try:
+        referrer_parsed = Referer(referrer)
+        referrer_name = referrer_parsed.referer
+        referrer_medium = referrer_parsed.medium
+    except AttributeError:
+        referrer_name = None
+        referrer_medium = None
     click = Click(short_url=short_url_key,
                   referrer=referrer,
+                  referrer_name=referrer_name,
+                  referrer_medium=referrer_medium,
                   ip_address=ip_address,
                   location_country=location_country,
                   location_region=location_region,
@@ -76,6 +88,8 @@ def create_click_log_table(table_name):
         {'name': 'id', 'type': 'INTEGER', 'mode': 'required'},
         {'name': 'short_url_id', 'type': 'STRING', 'mode': 'required'},
         {'name': 'referrer', 'type': 'STRING', 'mode': 'nullable'},
+        {'name': 'referrer_name', 'type': 'STRING', 'mode': 'nullable'},
+        {'name': 'referrer_medium', 'type': 'STRING', 'mode': 'nullable'},
         {'name': 'ip_address', 'type': 'STRING', 'mode': 'nullable'},
         {'name': 'location_country', 'type': 'STRING', 'mode': 'nullable'},
         {'name': 'location_region', 'type': 'STRING', 'mode': 'nullable'},
@@ -114,6 +128,8 @@ def write_click_log_to_bq(click_key_id):
         'id': click.key.id(),
         'short_url_id': click.short_url.id(),
         'referrer': click.referrer,
+        'referrer_name': click.referrer_name,
+        'referrer_medium': click.referrer_medium,
         'ip_address': click.ip_address,
         'location_country': click.location_country,
         'location_region': click.location_region,
@@ -175,3 +191,46 @@ def send_invitation(email, team_id, user_id, host):
         return False
     else:
         return True
+
+
+def create_click_log_data(team):
+    q = ShortURL.query()
+    q = q.filter(ShortURL.team == team).order(-ShortURL.created_at)
+    short_url = q.fetch(1)[0]
+    refferrers = [
+        'https://www.google.co.jp/search',
+        'https://twitter.com/',
+        'https://www.facebook.com/',
+    ]
+    uas = [
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_3) AppleWebKit/537.36 (KHTML, like Gecko) '
+        'Chrome/63.0.3239.132 Safari/537.36',
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 11_2_1 like Mac OS X) AppleWebKit/604.4.7 (KHTML, like Gecko) '
+        'Version/11.0 Mobile/15C153 Safari/604.1',
+    ]
+    for i in range(200):
+        user_agent_raw = random.choice(uas)
+        user_agent = parse(user_agent_raw)
+        referrer = random.choice(refferrers)
+        referrer_parsed = Referer(referrer)
+        click = Click(short_url=short_url.key,
+                      referrer=referrer,
+                      referrer_name=referrer_parsed.referer,
+                      referrer_medium=referrer_parsed.medium,
+                      ip_address='192.168.0.200',
+                      location_country='JP',
+                      location_region='13',
+                      location_city='shinjuku',
+                      location_lat_long='35.693840,139.703549',
+                      user_agent_raw=user_agent_raw,
+                      user_agent_device=user_agent.device.family,
+                      user_agent_device_brand=user_agent.device.brand,
+                      user_agent_device_model=user_agent.device.model,
+                      user_agent_os=user_agent.os.family,
+                      user_agent_os_version=user_agent.os.version_string,
+                      user_agent_browser=user_agent.browser.family,
+                      user_agent_browser_version=user_agent.browser.version_string,
+                      custom_code=None,
+                      created_at=datetime.datetime.now() + datetime.timedelta(days=random.randint(-90, 0)))
+        click.put()
+    return True

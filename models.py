@@ -92,6 +92,8 @@ class ShortURLID(ndb.Model):
 class Click(ndb.Model):
     short_url = ndb.KeyProperty(required=True, kind=ShortURL)
     referrer = ndb.StringProperty()
+    referrer_name = ndb.StringProperty()
+    referrer_medium = ndb.StringProperty()
     ip_address = ndb.StringProperty()
     location_country = ndb.StringProperty()
     location_region = ndb.StringProperty()

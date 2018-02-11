@@ -27,7 +27,7 @@ from forms import RegistrationForm, LongURLForm, UpdateShortURLForm, InvitationF
 from google.appengine.api import users, memcache
 from google.appengine.ext import ndb, deferred
 from google.appengine.datastore.datastore_query import Cursor
-from models import Team, User, ShortURL, ShortURLID, Invitation
+from models import Team, User, ShortURL, ShortURLID, Invitation, Click
 from tasks import write_click_log, send_invitation
 
 wtforms_json.init()
@@ -88,7 +88,7 @@ def index():
             logging.info(
                 'user validation from team_setting_id(GET parameter) is successfully done. Render shorten.html')
             response = make_response(render_template('shorten.html', domain_settings=domain_settings,
-                                     team_name=team_name))
+                                                     team_name=team_name))
             response.set_cookie('team', value=team_setting_id)
             return response
     if team_id and users.get_current_user():
@@ -240,15 +240,21 @@ def accept_invitation(invitation_id):
     return response
 
 
-@app.route('/page/detail/<short_url_id>', methods=['GET'])
+@app.route('/page/detail/<short_url_path>', methods=['GET'])
 @team_id_required
-def detail(team_id, team_name, short_url_id):
+def detail(team_id, team_name, short_url_path):
+    if is_local():
+        host_name = 'jmpt.me'
+    else:
+        host_name = request.host
     user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
     user_entity = User.get_by_id(user_key_name)
-    short_url = ShortURL.get_by_id(short_url_id)
+    short_url = ShortURL.get_by_id("{}_{}".format(host_name, short_url_path))
+    if short_url is None:
+        return make_response(render_template('404.html'), 404)
     if short_url.team != user_entity.team:
         return make_response(jsonify({'errors': ['you can not edit this short url']}), 401)
-    return render_template('detail.html', short_url=short_url, team_name=team_name)
+    return render_template('detail.html', short_url=short_url, team_name=team_name, short_url_path=short_url_path)
 
 
 def generate_short_url_path(long_url):  # type: (str) -> str
@@ -394,6 +400,42 @@ def shorten_urls(team_id, team_name):
                 'created_at': e.created_at.strftime('%Y-%m-%d %H:%M:%S%Z'),
                 'id': e.key.id()} for e in entities]
     return jsonify({'results': results, 'next_cursor': next_cursor.urlsafe() if next_cursor else None, 'more': more})
+
+
+@app.route('/api/v1/data/<short_url_path>', methods=['GET'])
+@team_id_required
+def data_short_url(team_id, team_name, short_url_path):
+    if is_local():
+        host_name = 'jmpt.me'
+    else:
+        host_name = request.host
+    short_url = ShortURL.get_by_id("{}_{}".format(host_name, short_url_path))
+    if short_url is None:
+        return make_response(jsonify({'errors': ['data not found']}), 404)
+    if str(short_url.team.id()) != str(team_id):
+        return make_response(jsonify({'errors': ['you can not access to this data']}), 400)
+    q = Click.query()
+    q = q.filter(Click.short_url == short_url.key).order(Click.created_at)
+    clicks = q.fetch(1000)
+    results = [{
+        'referrer_medium': c.referrer_medium,
+        'location_country': c.location_country,
+        'user_agent_device': c.user_agent_device,
+        'user_agent_browser': c.user_agent_browser,
+        'short_url': c.short_url.id(),
+        'created_at': c.created_at.isoformat(),
+    } for c in clicks]
+    aggregated_dic = {}
+    for r in results:
+        date = r['created_at'][:10]
+        if date in aggregated_dic:
+            aggregated_dic[date].append(r)
+        else:
+            aggregated_dic[date] = [r]
+    aggregated = []
+    for key, value in aggregated_dic.iteritems():
+        aggregated.append({'date': key, 'data': value, 'count': len(value)})
+    return make_response(jsonify({'results': sorted(aggregated, key=lambda x: x['date'])}), 200)
 
 
 @app.route('/<short_url_path>', methods=['GET'])
