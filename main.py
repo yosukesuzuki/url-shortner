@@ -434,7 +434,7 @@ def data_short_url(team_id, team_name, short_url_path):
             aggregated_dic[date] = [r]
     aggregated = []
     for key, value in aggregated_dic.iteritems():
-        aggregated.append({'date': key, 'data': value})
+        aggregated.append({'date': key, 'data': value, 'count': len(value)})
     return make_response(jsonify({'results': sorted(aggregated, key=lambda x: x['date'])}), 200)
 
 

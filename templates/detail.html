@@ -48,7 +48,30 @@
         const requestURL = '/api/v1/data/{{ short_url_path }}';
         axios.get(requestURL)
             .then(function (response) {
-                console.log(response.data.results);
+                //console.log(response.data.results);
+                let dateArray = ['x'];
+                let dataArray = ['clicks'];
+                for (const value of response.data.results) {
+                    dateArray.push(value.date);
+                    dataArray.push(value.count);
+                }
+                var chart = c3.generate({
+                    data: {
+                        x: 'x',
+                        columns: [
+                            dateArray,
+                            dataArray
+                        ]
+                    },
+                    axis: {
+                        x: {
+                            type: 'timeseries',
+                            tick: {
+                                format: '%Y-%m-%d'
+                            }
+                        }
+                    }
+                });
             })
             .catch(function (error) {
                 console.log(error);
