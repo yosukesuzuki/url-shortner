@@ -35,11 +35,17 @@ def write_click_log(short_url_key, referrer, ip_address,
                     user_agent, get_parameters):
     user_agent_raw = str(user_agent)
     user_agent = parse(user_agent_raw)
-    referrer_parsed = Referer(referrer)
+    try:
+        referrer_parsed = Referer(referrer)
+        referrer_name = referrer_parsed.referer
+        referrer_medium = referrer_parsed.medium
+    except AttributeError:
+        referrer_name = None
+        referrer_medium = None
     click = Click(short_url=short_url_key,
                   referrer=referrer,
-                  referrer_name=referrer_parsed.referer,
-                  referrer_medium=referrer_parsed.medium,
+                  referrer_name=referrer_name,
+                  referrer_medium=referrer_medium,
                   ip_address=ip_address,
                   location_country=location_country,
                   location_region=location_region,

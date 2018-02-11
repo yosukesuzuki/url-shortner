@@ -19,7 +19,7 @@
                     <div class="media-content">
                         <div class="content">
                             <p>
-                                <a href="{{ short_url.long_url }}">{{ short_url.short_url}}</a>
+                                <a href="{{ short_url.long_url }}">{{ short_url.short_url }}</a>
                                 <br/>
                                 → {{ short_url.long_url }}
                                 <br/>
@@ -32,19 +32,20 @@
         </div>
     </div>
     <div class="columns">
-        <div class="column is-three-quarters" id="short_urls">
+        <div class="column is-three-quarters">
+            <div id="chart"></div>
         </div>
     </div>
 {% endblock %}
 {% block scripts %}
-   <!-- Load c3.css -->
-<link href="/_assets/c3.css" rel="stylesheet">
+    <!-- Load c3.css -->
+    <link href="/_assets/c3.css" rel="stylesheet">
 
-<!-- Load d3.js and c3.js -->
-<script src="/_assets/d3.min.js" charset="utf-8"></script>
-<script src="/_assets/c3.min.js"></script>
+    <!-- Load d3.js and c3.js -->
+    <script src="/_assets/d3.min.js" charset="utf-8"></script>
+    <script src="/_assets/c3.min.js"></script>
     <script>
-    const requestURL = '/api/v1/data/{{ short_url_path }}';
+        const requestURL = '/api/v1/data/{{ short_url_path }}';
         axios.get(requestURL)
             .then(function (response) {
                 console.log(response.data.results);

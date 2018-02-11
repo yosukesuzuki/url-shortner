@@ -415,16 +415,27 @@ def data_short_url(team_id, team_name, short_url_path):
     if str(short_url.team.id()) != str(team_id):
         return make_response(jsonify({'errors': ['you can not access to this data']}), 400)
     q = Click.query()
-    q.filter(Click.short_url == short_url.key).order(Click.created_at)
+    q = q.filter(Click.short_url == short_url.key).order(Click.created_at)
     clicks = q.fetch(1000)
     results = [{
         'referrer_medium': c.referrer_medium,
         'location_country': c.location_country,
         'user_agent_device': c.user_agent_device,
         'user_agent_browser': c.user_agent_browser,
+        'short_url': c.short_url.id(),
         'created_at': c.created_at.isoformat(),
     } for c in clicks]
-    return make_response(jsonify({'results': results}), 200)
+    aggregated_dic = {}
+    for r in results:
+        date = r['created_at'][:10]
+        if date in aggregated_dic:
+            aggregated_dic[date].append(r)
+        else:
+            aggregated_dic[date] = [r]
+    aggregated = []
+    for key, value in aggregated_dic.iteritems():
+        aggregated.append({'date': key, 'data': value})
+    return make_response(jsonify({'results': sorted(aggregated, key=lambda x: x['date'])}), 200)
 
 
 @app.route('/<short_url_path>', methods=['GET'])
