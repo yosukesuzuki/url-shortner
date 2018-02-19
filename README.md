@@ -52,60 +52,10 @@ PYTHONPATH="./lib:$PYTHONPATH" py.test .
 * group user management
 
 ## data model
-### BillingPlan
-plan_name: String
-max_user: Integer
-
-### Team
-team_name: String
-billing_plan: BillingPlan
-billing_status: String
-primary_owner: User
-sub_domain: String
-custom_redirect_rule: JSON
-
-### User
-email: Email
-user_name: String
-team: Team
-role: String
-updated_at: DateTime
-created_at: DateTime
-
-### ShortURL
-key_name: domain + short_url id
-title: String
-original_url: String
-domain: String
-use_team_redirect_rule: Boolean 
-custom_redirect_rule: JSON
-created_by: User
-team: Team
-updated_at: DateTime
-created_at: DateTime
-
-### Oauth2Token
-key_name: token
-created_by: User
-expired_at: DateTime
-updated_at: DateTime
-created_at: DateTime
-
-### ApiCall
-pay_load: Text
-headers: Text
-created_by: User
-created_at: DateTime
-
-### Click
-headers: Text
-user_agent: Text
-cookie: Text
-created_at: DateTime
+see [models.py](models.py)
 
 
 ## endpoint
-
 ### GUI
 
 * / : top
@@ -121,8 +71,6 @@ created_at: DateTime
     * deep link setting
 * /{short_url_id}
     * redirect to url
-* /{short_url_id}+
-    * show analytics for the link
 
 ### API
 * /api/access_token: return access token
