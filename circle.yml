@@ -89,6 +89,14 @@ jobs:
               ${HOME}/google_appengine/appcfg.py update . -A $GCLOUD_PROJECT_DEV --oauth2_refresh_token=$GCLOUD_SERVICE_KEY_DEV
             fi
 
+      # deploy
+      - deploy:
+          name: Deploy to production environment
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "deployment/production" ]; then
+              echo $GCLOUD_CREDENTIAL_PRODUCTION > ~/repo/credential.json
+              ${HOME}/google_appengine/appcfg.py update . -A $GCLOUD_PROJECT_PRODUCTION --oauth2_refresh_token=$GCLOUD_SERVICE_KEY_PRODUCTION
+            fi
 
       - store_artifacts:
           path: test-reports
