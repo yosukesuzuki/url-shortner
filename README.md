@@ -17,6 +17,36 @@ pip install pytest
 pip install pyyaml
 ```
 
+# create files
+## credential.json: file of GCP credential
+
+used for BigQuery integration, run `/_admin/createbq` after first deploy
+
+```
+{
+  "type": "service_account",
+  "project_id": "hoge",
+  "private_key_id": "xxxxxxxxxx",
+  "private_key": "-----BEGIN PRIVATE KEY-----xxxxx\n-----END PRIVATE KEY-----\n",
+  "client_email": "xxxxx@xxxxxxxxxxx.iam.gserviceaccount.com",
+  "client_id": "xxxxx",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://accounts.google.com/o/oauth2/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/xxxxxx"
+}
+```
+
+## config.json: file of other settings
+```
+{
+  "sendgrid_api_key": "SG.xxxx",
+  "sendgrid_template_id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+  "sendgrid_from_email":"noreply@xxxxxxxxxxxx"
+}
+```
+
+
 Run local dev server
 
 ```bash
@@ -73,7 +103,7 @@ see [models.py](models.py)
     * redirect to url
 
 ### API
-* /api/access_token: return access token
+* TODO: /api/access_token: return access token
 * /api/v1/shorten
     * GET: return recent list
     * POST: create short url
