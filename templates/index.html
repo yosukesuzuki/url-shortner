@@ -3,11 +3,89 @@
     {% include "nav_for_nonlogin.html" %}
 {% endblock %}
 {% block content %}
-    welcome
+    <section class="hero">
+        <div class="hero-body">
+            <div class="container">
+                <h1 class="title">
+                    jmpt.me links and tracks the world by short URL
+                </h1>
+                <h2 class="subtitle">
+                    The service for making your own short URL and tracking it
+                </h2>
+                <p>
+                    <a class="button is-large is-outlined is-primary" href="/page/register">
+                        <span>Sign Up Now!</span>
+                    </a>
+                </p>
+            </div>
+        </div>
+    </section>
+    <section>
+        <div class="tile is-ancestor">
+            <div class="tile is-parent">
+                <div class="box">
+                    <article class="media">
+                        <div class="media-left">
+                            <figure class="image is-64x64">
+                                <img src="/assets/printer.svg" alt="Image" width="64">
+                            </figure>
+                        </div>
+                        <div class="media-content">
+                            <div class="content">
+                                <p class="title">For Print</p>
+                                <p>
+                                    Use short URL to print your landing page URL. You can use easy to remember
+                                    characters
+                                </p>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+            <div class="tile is-parent">
+                <div class="box">
+                    <article class="media">
+                        <div class="media-left">
+                            <figure class="image is-64x64">
+                                <img src="/assets/microphone-black-shape.svg" alt="Image" width="64">
+                            </figure>
+                        </div>
+                        <div class="media-content">
+                            <div class="content">
+                                <p class="title">For Voice</p>
+                                <p>
+                                    Voice Media like Podcast is hard to communicate with long URL. Short URL is the
+                                    solution.
+                                </p>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+            <div class="tile is-parent">
+                <div class="box">
+                    <article class="media">
+                        <div class="media-left">
+                            <figure class="image is-64x64">
+                                <img src="/assets/sharethis-logo.svg" alt="Image" width="64">
+                            </figure>
+                        </div>
+                        <div class="media-content">
+                            <div class="content">
+                                <p class="title">For Social</p>
+                                <p>
+                                    Social media is important to promote your web content, but without tracking? You can
+                                    check performance of your social media link.
+                                </p>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </section>
+    <div>
+        <a href="https://www.flaticon.com/authors/simpleicon">Icons are designed by SimpleIcon from Flaticon</a>
+    </div>
 
-    <p>
-        <a class="button is-large" href="/page/register">
-            <span>Sign Up</span>
-        </a>
-    </p>
 {% endblock %}
