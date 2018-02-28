@@ -6,7 +6,7 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
     <link rel="icon" type="image/png" href="/favicon.png"/>
     <title>{% block title %}{% endblock %}jmpt.me, URL Shortner </title>
-    <link rel="stylesheet" href="/_assets/bulmaswatch.min.css">
+    <link rel="stylesheet" href="/assets/bulmaswatch.min.css">
     {% block header %}
     {% endblock %}
     <!-- spinner from http://tobiasahlin.com/spinkit/ -->
@@ -76,7 +76,7 @@
     <nav class="navbar is-transparent">
         <div class="navbar-brand">
             <a class="navbar-item" href="/">
-                jmpt.me
+                jmpt.me [beta]
             </a>
             {% block nav %}
             {% endblock %}
@@ -91,5 +91,16 @@
 </section>
 {% block scripts %}
 {% endblock %}
+<footer class="footer">
+  <div class="container">
+    <div class="content has-text-centered">
+      <p>
+          <a href="/page/privacy">Privacy</a> |
+          <a href="/page/terms">Terms</a>
+      </p>
+      <p class="is-size-5">jmpt.me dev team</p>
+    </div>
+  </div>
+</footer>
 </body>
 </html>

@@ -27,7 +27,7 @@ handlers:
   static_files: favicon.png
   upload: favicon.png
   mime_type: image/png
-- url: /_assets/
+- url: /assets/
   static_dir: assets/
   expiration: "1m"
 - url: /page/signin.*

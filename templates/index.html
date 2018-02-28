@@ -3,11 +3,121 @@
     {% include "nav_for_nonlogin.html" %}
 {% endblock %}
 {% block content %}
-    welcome
+    <section class="hero">
+        <div class="hero-body">
+            <div class="container">
+                <h1 class="title">
+                    jmpt.me links and tracks the world by short URL
+                </h1>
+                <h2 class="subtitle">
+                    The service for making your own short URL and tracking it
+                </h2>
+                <p>
+                    <a class="button is-large is-outlined is-primary" href="/page/register">
+                        <span>Sign Up Now!</span>
+                    </a>
+                </p>
+            </div>
+        </div>
+    </section>
+    <section>
+        <div class="tile is-ancestor">
+            <div class="tile is-parent">
+                <div class="box">
+                    <article class="media">
+                        <div class="media-left">
+                            <figure class="image is-64x64">
+                                <img src="/assets/printer.svg" alt="Image" width="64">
+                            </figure>
+                        </div>
+                        <div class="media-content">
+                            <div class="content">
+                                <p class="title">For Print</p>
+                                <p>
+                                    Use short URL to print your landing page URL. You can use easy to remember
+                                    characters
+                                </p>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+            <div class="tile is-parent">
+                <div class="box">
+                    <article class="media">
+                        <div class="media-left">
+                            <figure class="image is-64x64">
+                                <img src="/assets/microphone-black-shape.svg" alt="Image" width="64">
+                            </figure>
+                        </div>
+                        <div class="media-content">
+                            <div class="content">
+                                <p class="title">For Voice</p>
+                                <p>
+                                    Voice Media like Podcast is hard to communicate with long URL. Short URL is the
+                                    solution.
+                                </p>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+            <div class="tile is-parent">
+                <div class="box">
+                    <article class="media">
+                        <div class="media-left">
+                            <figure class="image is-64x64">
+                                <img src="/assets/sharethis-logo.svg" alt="Image" width="64">
+                            </figure>
+                        </div>
+                        <div class="media-content">
+                            <div class="content">
+                                <p class="title">For Social</p>
+                                <p>
+                                    Social media is important to promote your web content, but without tracking? You can
+                                    check performance of your social media link.
+                                </p>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="hero">
+        <div class="hero-body">
+            <div class="container">
+                <h1 class="title">
+                    Get Started with jmpt.me for Free
+                </h1>
+                <h2 class="subtitle">
+                    jmpt.me is now on beta release. All user can use full feature fully in beta stage.
+                </h2>
+            </div>
+        </div>
+        <div class="tile is-ancestor">
+          <div class="tile is-parent is-half">
+            <article class="tile is-child box is-primary">
+              <p class="title">Use your own domain</p>
+              <p class="subtitle">You can use your own domain</p>
+                <p>This is application of setting up custom domain. Ex "jmpt.me/anywhere" to "yourdomain.com/anywhere". Your custom domain has its own name space.</p>
+                <a class="button is-primary" href="https://docs.google.com/forms/d/e/1FAIpQLSeh6TxKR7JfKoedlx5rAIqc3npkGJTyZpRVzJHE3cIGYWzcGw/viewform?usp=sf_link">
+                    Apply
+                </a>
+            </article>
+          </div>
+          <div class="tile is-parent is-half">
+            <article class="tile is-child box is-info">
+              <p class="title">Open Source</p>
+              <p class="subtitle">You can run jmpt.me by yourself. </p>
+                <p>You can run jmpt.me on Google App Engine/Python platform. It's easy to setup and no need to care about infra scalability.</p>
+                <a href="https://github.com/yosukesuzuki/url-shortner" class="button is-info">Contribute</a>
+            </article>
+          </div>
+        </div>
+    </section>
+    <div>
+        <a href="https://www.flaticon.com/authors/simpleicon">Icons are designed by SimpleIcon from Flaticon</a>
+    </div>
 
-    <p>
-        <a class="button is-large" href="/page/register">
-            <span>Sign Up</span>
-        </a>
-    </p>
 {% endblock %}

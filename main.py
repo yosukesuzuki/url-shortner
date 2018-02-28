@@ -438,6 +438,16 @@ def data_short_url(team_id, team_name, short_url_path):
     return make_response(jsonify({'results': sorted(aggregated, key=lambda x: x['date'])}), 200)
 
 
+@app.route('/page/terms', methods=['GET'])
+def terms():
+    return render_template('terms.html')
+
+
+@app.route('/page/privacy', methods=['GET'])
+def privacy():
+    return render_template('privacy.html')
+
+
 @app.route('/<short_url_path>', methods=['GET'])
 def extract_short_url(short_url_path):
     if is_local():
