@@ -33,7 +33,7 @@ def dlfile(url):
         # Open our local file for writing
         with open("google_appengine.zip", "wb") as local_file:
             local_file.write(f.read())
-    except:
+    except Exception:
         print("Download failed")
 
 
