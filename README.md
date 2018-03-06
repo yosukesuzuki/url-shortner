@@ -15,6 +15,7 @@ For test env
 ```bash
 pip install pytest
 pip install pyyaml
+pip install pillow
 ```
 
 # create files

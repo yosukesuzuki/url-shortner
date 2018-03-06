@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block header %}
-    <script src="https://unpkg.com/axios@0.16.2/dist/axios.min.js"></script>
+    <script src="/assets/axios.min.js"></script>
 {% endblock %}
 {% block nav %}
     {% include "nav_for_login.html" %}
@@ -157,11 +157,11 @@
                   <strong>
                       <span class="domain">@@short_url_domain</span>/<span class="path" contentEditable="true" onkeypress="onEnterKey(this, event)">@@short_url_path</span>
                   </strong><br />
-                  <span>@@long_url</span><br />
+                  <span>@@long_url</span><a href="@@long_url">[&#8599;]</a><br />
                   <span onclick="editShortURL(this, event)" class="button is-small">edit</span>
-                  <a href="@@long_url" target="_blank" class="button is-small">link</a>
-                  <a onclick="copyToClipboard('@@short_url_domain/@@short_url_path')" class="button is-small">copy</a>
-                  <a href="/page/detail/@@short_url_path" class="button is-small">click data</a>
+                  <a onclick="copyToClipboard('https://@@short_url_domain/@@short_url_path')" class="button is-small">copy</a>
+                  <a href="/image/qr/@@short_url_domain/@@short_url_path" class="button is-small" download>QR code</a>
+                  <a href="/page/detail/@@short_url_domain/@@short_url_path" class="button is-small">click data</a>
                   <h4>@@title</h4>
                 </p>
                 <p>

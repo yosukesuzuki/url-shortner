@@ -19,10 +19,13 @@ import datetime
 from functools import wraps
 from urllib2 import HTTPError
 from urlparse import urlparse
+from StringIO import StringIO
 
 import opengraph
 import wtforms_json
-from flask import Flask, render_template, request, redirect, url_for, make_response, jsonify
+from flask import Flask, render_template, request, redirect, url_for, make_response, jsonify, send_file
+import qrcode
+
 from forms import RegistrationForm, LongURLForm, UpdateShortURLForm, InvitationForm, RoleForm
 from google.appengine.api import users, memcache
 from google.appengine.ext import ndb, deferred
@@ -240,21 +243,31 @@ def accept_invitation(invitation_id):
     return response
 
 
-@app.route('/page/detail/<short_url_path>', methods=['GET'])
+@app.route('/page/detail/<short_url_domain>/<short_url_path>', methods=['GET'])
 @team_id_required
-def detail(team_id, team_name, short_url_path):
-    if is_local():
-        host_name = 'jmpt.me'
-    else:
-        host_name = request.host
+def detail(team_id, team_name, short_url_domain, short_url_path):
     user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
     user_entity = User.get_by_id(user_key_name)
-    short_url = ShortURL.get_by_id("{}_{}".format(host_name, short_url_path))
+    short_url = ShortURL.get_by_id("{}_{}".format(short_url_domain, short_url_path))
     if short_url is None:
         return make_response(render_template('404.html'), 404)
     if short_url.team != user_entity.team:
         return make_response(jsonify({'errors': ['you can not edit this short url']}), 401)
-    return render_template('detail.html', short_url=short_url, team_name=team_name, short_url_path=short_url_path)
+    return render_template('detail.html', short_url=short_url, team_name=team_name, short_url_domain=short_url_domain,
+                           short_url_path=short_url_path)
+
+
+@app.route('/image/qr/<short_url_domain>/<short_url_path>', methods=['GET'])
+@team_id_required
+def generate_qrcode(team_id, team_name, short_url_domain, short_url_path):
+    short_url = ShortURL.get_by_id("{}_{}".format(short_url_domain, short_url_path))
+    if short_url is None:
+        return make_response(render_template('404.html'), 404)
+    qrcode_image = qrcode.make('https://{}/{}'.format(short_url_domain, short_url_path))
+    image_io = StringIO()
+    qrcode_image.save(image_io)
+    image_io.seek(0)
+    return send_file(image_io, mimetype='image/png')
 
 
 def generate_short_url_path(long_url):  # type: (str) -> str
@@ -402,14 +415,10 @@ def shorten_urls(team_id, team_name):
     return jsonify({'results': results, 'next_cursor': next_cursor.urlsafe() if next_cursor else None, 'more': more})
 
 
-@app.route('/api/v1/data/<short_url_path>', methods=['GET'])
+@app.route('/api/v1/data/<short_url_domain>/<short_url_path>', methods=['GET'])
 @team_id_required
-def data_short_url(team_id, team_name, short_url_path):
-    if is_local():
-        host_name = 'jmpt.me'
-    else:
-        host_name = request.host
-    short_url = ShortURL.get_by_id("{}_{}".format(host_name, short_url_path))
+def data_short_url(team_id, team_name, short_url_domain, short_url_path):
+    short_url = ShortURL.get_by_id("{}_{}".format(short_url_domain, short_url_path))
     if short_url is None:
         return make_response(jsonify({'errors': ['data not found']}), 404)
     if str(short_url.team.id()) != str(team_id):
