@@ -7,3 +7,4 @@ credential.json
 config.json
 *.pem
 .cache/*
+venv/*
