@@ -212,9 +212,13 @@ class ShortenHandlerTest(unittest.TestCase):
                                        follow_redirects=False)
         self.assertEqual(response_strip.status_code, 200)
         self.assertEqual(json.loads(response_strip.data)['short_url'], 'jmpt.me/jmptme1')
-        response_detail = self.app.get('/page/detail/jmptme',
+        response_detail = self.app.get('/page/detail/jmpt.me/jmptme1',
                                        headers={'Host': 'jmpt.me'})
         self.assertEqual(response_detail.status_code, 200)
+        response_image = self.app.get('/image/qr/jmpt.me/jmptme1',
+                                      headers={'Host': 'jmpt.me'})
+        self.assertEqual(response_image.status_code, 200)
+        self.assertEqual(response_image.headers['Content-type'], 'image/png')
 
     @patch('opengraph.OpenGraph')
     def testPatch(self, OpenGraph):
@@ -426,7 +430,7 @@ class RedirectLoggingTest(unittest.TestCase):
         self.assertEquals(click_results[0].referrer_name, 'Google')
         self.assertEquals(click_results[0].referrer_medium, 'search')
         self.app.set_cookie('localhost', 'team', str(self.team_id))
-        api_response = self.app.get('/api/v1/data/01',
+        api_response = self.app.get('/api/v1/data/jmpt.me/01',
                                     follow_redirects=False,
                                     headers={'Host': 'jmpt.me'})
         self.assertEqual(api_response.status_code, 200)
