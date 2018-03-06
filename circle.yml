@@ -63,6 +63,7 @@ jobs:
             pip install pytest
             pip install webob
             pip install pyyaml
+            pip install Pillow
             pip install flake8
             pip install tox
 
