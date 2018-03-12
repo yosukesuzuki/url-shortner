@@ -158,11 +158,12 @@
                       <span class="domain">@@short_url_domain</span>/<span class="path" contentEditable="true" onkeypress="onEnterKey(this, event)">@@short_url_path</span>
                   </strong><br />
                   <span>@@long_url</span><a href="@@long_url">[&#8599;]</a><br />
-                  <span onclick="editShortURL(this, event)" class="button is-small">edit</span>
+                  <h4>@@title</h4>
+                  <p><p onclick="editMemo(this, event)" class="dotted">[add memo]</p></p>
+                  <span onclick="editShortURL(this, event)" class="button is-small">edit URL</span>
                   <a onclick="copyToClipboard('https://@@short_url_domain/@@short_url_path')" class="button is-small">copy</a>
                   <a href="/image/qr/@@short_url_domain/@@short_url_path" class="button is-small" download>QR code</a>
                   <a href="/page/detail/@@short_url_domain/@@short_url_path" class="button is-small">click data</a>
-                  <h4>@@title</h4>
                 </p>
                 <p>
                     <div class="field has-addons">
@@ -255,6 +256,16 @@
                 .catch(function (error) {
                     console.log(error);
                 });
+        }
+
+        function editMemo(element, event) {
+            element.setAttribute('contenteditable', true);
+            if(element.innerText == '[add memo]') {
+                element.innerText = '';
+            }
+            if(element.nextSibling.getAttribute('class') != 'done') {
+                element.insertAdjacentHTML('afterend', '<span class="done" onclick="postMemo(this, event)">[done]</span>');
+            }
         }
 
         const urlParams = new URLSearchParams(window.location.search);
