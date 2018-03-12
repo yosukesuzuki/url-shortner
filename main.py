@@ -137,12 +137,12 @@ def register():
 
 @app.route('/page/signin', methods=['GET'])
 def signin():
-    response = make_response(redirect(url_for('index')))
     q = User.query()
     q = q.filter(User.user == users.get_current_user())
     result = q.fetch(1000)
     if len(result) == 1:
         team_id = result[0].key.id().split('_')[:1][0]
+        response = make_response(redirect(url_for('index')))
         if validate_team_user(team_id, users.get_current_user().user_id()):
             logging.info('set cookie, {}'.format(team_id))
             response.set_cookie('team', value=team_id)
@@ -151,6 +151,7 @@ def signin():
         team_keys = [r.team for r in result]
         teams = ndb.get_multi(team_keys)
         return render_template('signin.html', teams=teams)
+    response = make_response(redirect(url_for('index', message='not_registered')))
     return response
 
 

@@ -80,6 +80,7 @@ class ShortURL(ndb.Model):
     memo = ndb.TextProperty()
     image = ndb.StringProperty()
     tags = ndb.StringProperty(repeated=True)
+    count = ndb.IntegerProperty()
     updated_at = ndb.DateTimeProperty(auto_now=True)
     created_at = ndb.DateTimeProperty(auto_now_add=True)
 
