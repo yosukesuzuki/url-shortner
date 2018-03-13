@@ -410,6 +410,7 @@ def shorten_urls(team_id, team_name):
                 'long_url': e.long_url,
                 'image': e.image,
                 'description': e.description,
+                'memo': e.memo,
                 'tags': e.tags,
                 'created_at': e.created_at.strftime('%Y-%m-%d %H:%M:%S%Z'),
                 'id': e.key.id()} for e in entities]

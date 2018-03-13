@@ -159,7 +159,7 @@
                   </strong><br />
                   <span>@@long_url</span><a href="@@long_url">[&#8599;]</a><br />
                   <h4>@@title</h4>
-                  <p><p onclick="editMemo(this, event)" class="dotted">[add memo]</p></p>
+                  <p><p onclick="editMemo(this, event)" class="dotted">@@memo</p></p>
                   <span onclick="editShortURL(this, event)" class="button is-small">edit URL</span>
                   <a onclick="copyToClipboard('https://@@short_url_domain/@@short_url_path')" class="button is-small">copy</a>
                   <a href="/image/qr/@@short_url_domain/@@short_url_path" class="button is-small" download>QR code</a>
@@ -260,11 +260,27 @@
 
         function editMemo(element, event) {
             element.setAttribute('contenteditable', true);
-            if(element.innerText == '[add memo]') {
+            if(element.innerText === '[add memo]') {
                 element.innerText = '';
             }
-            if(element.nextSibling.getAttribute('class') != 'done') {
+            if(element.nextSibling.getAttribute('class') !== 'done') {
                 element.insertAdjacentHTML('afterend', '<span class="done" onclick="postMemo(this, event)">[done]</span>');
+            }
+        }
+
+        function postMemo(element, event) {
+            const that = element.previousSibling;
+            const memoValue = that.innerText.trim();
+            if (memoValue !== "") {
+                const shortURL = that.parentElement.dataset.shorturl;
+                axios.patch('/api/v1/short_urls/' + shortURL, {'memo': memoValue})
+                    .then(function (response) {
+                        element.remove();
+                        console.log('success');
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
             }
         }
 
@@ -286,12 +302,17 @@
                     for (const tag of val.tags) {
                         tagHtml += tagTemplate.replace(/@@tag/, tag);
                     }
+                    let memo = "[add memo]";
+                    if((val.memo !== "")&&(val.memo !== null)){
+                        memo = val.memo;
+                    }
                     resultsHTML += mediaObjTemplate.replace(/@@image/g, val.image)
                         .replace(/@@title/g, val.title)
                         .replace(/@@short_url_domain/g, shortURLDomain)
                         .replace(/@@short_url_path/g, shortURLPath)
                         .replace(/@@long_url/g, val.long_url)
                         .replace(/@@description/g, val.description)
+                        .replace(/@@memo/g, memo)
                         .replace(/@@id/g, val.id)
                         .replace(/@@tags/g, tagHtml);
                 });
