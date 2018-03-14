@@ -3,11 +3,21 @@
     {% include "nav_for_nonlogin.html" %}
 {% endblock %}
 {% block content %}
-    <h1>404 link not found</h1>
-
-    <p>
-        <a class="button is-large" href="/page/register">
-            <span>Sign Up</span>
-        </a>
-    </p>
+    <section class="hero">
+        <div class="hero-body">
+            <div class="container">
+                <h1 class="title">
+                    404 link not found
+                </h1>
+                <h2 class="subtitle">
+                   please check the URL
+                </h2>
+                <p>
+                    <a class="button is-large is-outlined is-primary" href="/page/register">
+                        <span>Sign Up</span>
+                    </a>
+                </p>
+            </div>
+        </div>
+    </section>
 {% endblock %}
