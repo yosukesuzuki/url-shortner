@@ -263,6 +263,7 @@
             if(element.innerText === '[add memo]') {
                 element.innerText = '';
             }
+            element.focus();
             if(element.nextSibling.getAttribute('class') !== 'done') {
                 element.insertAdjacentHTML('afterend', '<span class="done" onclick="postMemo(this, event)">[done]</span>');
             }
