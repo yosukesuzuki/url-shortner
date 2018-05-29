@@ -81,6 +81,7 @@ class ShortURL(ndb.Model):
     image = ndb.StringProperty()
     tags = ndb.StringProperty(repeated=True)
     count = ndb.IntegerProperty()
+    generated_by_api = ndb.BooleanProperty(default=False)
     updated_at = ndb.DateTimeProperty(auto_now=True)
     created_at = ndb.DateTimeProperty(auto_now_add=True)
 
