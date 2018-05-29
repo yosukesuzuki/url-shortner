@@ -16,6 +16,7 @@
 import os
 import logging
 import datetime
+import uuid
 from functools import wraps
 from urllib2 import HTTPError
 from urlparse import urlparse
@@ -30,7 +31,7 @@ from forms import RegistrationForm, LongURLForm, UpdateShortURLForm, InvitationF
 from google.appengine.api import users, memcache
 from google.appengine.ext import ndb, deferred
 from google.appengine.datastore.datastore_query import Cursor
-from models import Team, User, ShortURL, ShortURLID, Invitation, Click
+from models import Team, User, ShortURL, ShortURLID, Invitation, Click, APIToken
 from tasks import write_click_log, send_invitation
 
 wtforms_json.init()
@@ -190,6 +191,30 @@ def settings(team_id, team_name):
                            form=form,
                            messages=messages,
                            errors=errors)
+
+
+@app.route('/page/token', methods=['POST'])
+@team_id_required
+def generate_token(team_id, team_name):
+    user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
+    user_entity = User.get_by_id(user_key_name)
+    team = Team.get_by_id(int(team_id))
+    key_name = uuid.uuid4().hex
+    APIToken(id=key_name, team=team, created_by=user_entity).put()
+    response = make_response(redirect(url_for('settings')))
+    return response
+
+
+@app.route('/page/token/<token_id>', methods=['DELETE'])
+@team_id_required
+def delete_token(team_id, team_name, token_id):
+    user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
+    user_entity = User.get_by_id(user_key_name)
+    if user_entity.role in ['primary_owner', 'admin']:
+        api_token = APIToken.get_by_id(token_id)
+        api_token.key.delete()
+    response = make_response(redirect(url_for('settings')))
+    return response
 
 
 @app.route('/page/role', methods=['POST'])
