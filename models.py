@@ -91,6 +91,18 @@ class ShortURLID(ndb.Model):
     created_at = ndb.DateTimeProperty(auto_now_add=True)
 
 
+class APIToken(ndb.Model):
+    """
+    Token == key_name, add prefix 'jmptme-' to detect leakage in Github or similar system
+    """
+    team = ndb.KeyProperty(required=True, kind=Team)
+    created_by = ndb.KeyProperty(kind=User)
+    description = ndb.TextProperty()
+    revoked = ndb.BooleanProperty(default=False)
+    updated_at = ndb.DateTimeProperty(auto_now=True)
+    created_at = ndb.DateTimeProperty(auto_now_add=True)
+
+
 class Click(ndb.Model):
     short_url = ndb.KeyProperty(required=True, kind=ShortURL)
     referrer = ndb.StringProperty()
