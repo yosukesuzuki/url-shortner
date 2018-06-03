@@ -184,9 +184,12 @@ def settings(team_id, team_name):
             messages.append('Invitation sent')
         else:
             errors.append('Invitation sent failed')
+    api_tokens = APIToken.query().filter(APIToken.team == Team.get_by_id(int(team_id)).key).order(
+        -APIToken.created_at).fetch()
     return render_template('team_settings.html',
                            team_name=team_name,
                            team_users=team_users,
+                           api_tokens=api_tokens,
                            current_user=user_entity,
                            form=form,
                            messages=messages,
@@ -198,9 +201,8 @@ def settings(team_id, team_name):
 def generate_token(team_id, team_name):
     user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
     user_entity = User.get_by_id(user_key_name)
-    team = Team.get_by_id(int(team_id))
     key_name = uuid.uuid4().hex
-    APIToken(id=key_name, team=team, created_by=user_entity).put()
+    APIToken(id=key_name, team=user_entity.team, created_by=user_entity.key).put()
     response = make_response(redirect(url_for('settings')))
     return response
 

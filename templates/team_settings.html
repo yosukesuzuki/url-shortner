@@ -87,7 +87,7 @@
     <div class="columns">
         <div class="is-half column">
             <h2 class="title">API Token</h2>
-            <form method="post" target="{{ url_for('generate_token') }}">
+            <form method="post" action="{{ url_for('generate_token') }}">
                 <div class="field is-grouped">
                     <div class="control">
                         <button class="button is-primary">Generate API Token</button>
@@ -103,16 +103,15 @@
                 </tr>
                 </thead>
                 <tbody>
-                {% for token in team_tokens %}
+                {% for token in api_tokens %}
                     <tr>
                         <td>{{ token.key.id() }}</td>
-                        <td>{{ token.user.user_name }}</td>
-                        <td>
+                        <td>{{ token.created_by.user_name }}</td>
                         <td>
                             {{ token.created_at }}
                         </td>
                         <td>
-                            <form method="delete" target="{{ url_for('generate_token', token_id=token.key.id()) }}">
+                            <form method="delete" target="{{ url_for('delete_token', token_id=token.key.id()) }}">
                                 <div class="field is-grouped">
                                     <div class="control">
                                         <button class="button is-danger">Delete</button>
