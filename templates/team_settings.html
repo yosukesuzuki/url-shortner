@@ -105,13 +105,13 @@
                 <tbody>
                 {% for token in api_tokens %}
                     <tr>
-                        <td>{{ token.key.id() }}</td>
-                        <td>{{ token.created_by.user_name }}</td>
+                        <td>{{ token['token'] }}</td>
+                        <td>{{ token['created_by'] }}</td>
                         <td>
-                            {{ token.created_at }}
+                            {{ token['created_at'] }}
                         </td>
                         <td>
-                            <form method="delete" target="{{ url_for('delete_token', token_id=token.key.id()) }}">
+                            <form method="delete" action="{{ url_for('delete_token', token_id=token['token']) }}">
                                 <div class="field is-grouped">
                                     <div class="control">
                                         <button class="button is-danger">Delete</button>

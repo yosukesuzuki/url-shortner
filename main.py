@@ -172,6 +172,7 @@ def settings(team_id, team_name):
     messages = []
     errors = []
     team_users = User.query().filter(User.team == Team.get_by_id(int(team_id)).key).order(-Team.created_at).fetch()
+    team_user_dic = {u.key.id(): u.user_name for u in team_users}
     user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
     user_entity = User.get_by_id(user_key_name)
     if request.method == 'POST' and form.validate():
@@ -184,8 +185,10 @@ def settings(team_id, team_name):
             messages.append('Invitation sent')
         else:
             errors.append('Invitation sent failed')
-    api_tokens = APIToken.query().filter(APIToken.team == Team.get_by_id(int(team_id)).key).order(
+    api_token_query_results = APIToken.query().filter(APIToken.team == Team.get_by_id(int(team_id)).key).order(
         -APIToken.created_at).fetch()
+    api_tokens = [{'token': t.key.id(), 'created_by': team_user_dic[t.created_by.id()], 'created_at': str(t.created_at)}
+                  for t in api_token_query_results]
     return render_template('team_settings.html',
                            team_name=team_name,
                            team_users=team_users,
