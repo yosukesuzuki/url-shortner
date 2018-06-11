@@ -111,13 +111,17 @@
                             {{ token['created_at'] }}
                         </td>
                         <td>
-                            <form method="delete" action="{{ url_for('delete_token', token_id=token['token']) }}">
+                            {% if current_user.role in ('primary_owner', 'admin') %}
+                            <form method="post" action="{{ url_for('delete_token', token_id=token['token']) }}">
                                 <div class="field is-grouped">
                                     <div class="control">
                                         <button class="button is-danger">Delete</button>
                                     </div>
                                 </div>
                             </form>
+                            {% else %}
+                                -
+                            {% endif %}
                         </td>
                     </tr>
                 {% endfor %}

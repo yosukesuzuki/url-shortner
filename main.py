@@ -204,22 +204,31 @@ def settings(team_id, team_name):
 def generate_token(team_id, team_name):
     user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
     user_entity = User.get_by_id(user_key_name)
-    key_name = uuid.uuid4().hex
-    APIToken(id=key_name, team=user_entity.team, created_by=user_entity.key).put()
-    response = make_response(redirect(url_for('settings')))
-    return response
+    if user_entity.role in ['primary_owner', 'admin']:
+        key_name = uuid.uuid4().hex
+        APIToken(id=key_name, team=user_entity.team, created_by=user_entity.key).put()
+        response = make_response(redirect(url_for('settings')))
+        return response
+    logging.info('this user does not have enough role to make token')
+    return render_template('invalid.html'), 400
 
 
-@app.route('/page/token/<token_id>', methods=['DELETE'])
+@app.route('/page/delete/token/<token_id>', methods=['post'])
 @team_id_required
 def delete_token(team_id, team_name, token_id):
     user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
     user_entity = User.get_by_id(user_key_name)
     if user_entity.role in ['primary_owner', 'admin']:
         api_token = APIToken.get_by_id(token_id)
-        api_token.key.delete()
-    response = make_response(redirect(url_for('settings')))
-    return response
+        if api_token.team.id() == user_entity.team.id():
+            api_token.key.delete()
+            response = make_response(redirect(url_for('settings')))
+            return response
+        logging.info('the team {} of this user does not match to the token team {}'.format(user_entity.team.id(),
+                                                                                           api_token.team.id()))
+        return render_template('invalid.html'), 400
+    logging.info('this user does not have enough role to delete token')
+    return render_template('invalid.html'), 400
 
 
 @app.route('/page/role', methods=['POST'])
