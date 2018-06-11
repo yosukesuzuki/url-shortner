@@ -185,10 +185,12 @@ def settings(team_id, team_name):
             messages.append('Invitation sent')
         else:
             errors.append('Invitation sent failed')
-    api_token_query_results = APIToken.query().filter(APIToken.team == Team.get_by_id(int(team_id)).key).order(
-        -APIToken.created_at).fetch()
+    qo = ndb.QueryOptions(keys_only=True)
+    api_token_query = APIToken.query().filter(APIToken.team == Team.get_by_id(int(team_id)).key).order(
+        -APIToken.created_at).fetch(1000, options=qo)
+    api_token_query_results = ndb.get_multi(api_token_query)
     api_tokens = [{'token': t.key.id(), 'created_by': team_user_dic[t.created_by.id()], 'created_at': str(t.created_at)}
-                  for t in api_token_query_results]
+                  for t in api_token_query_results if t is not None]
     return render_template('team_settings.html',
                            team_name=team_name,
                            team_users=team_users,
@@ -206,7 +208,8 @@ def generate_token(team_id, team_name):
     user_entity = User.get_by_id(user_key_name)
     if user_entity.role in ['primary_owner', 'admin']:
         key_name = uuid.uuid4().hex
-        APIToken(id=key_name, team=user_entity.team, created_by=user_entity.key).put()
+        api_token = APIToken(id=key_name, team=user_entity.team, created_by=user_entity.key).put()
+        api_token.get()
         response = make_response(redirect(url_for('settings')))
         return response
     logging.info('this user does not have enough role to make token')
