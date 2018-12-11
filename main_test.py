@@ -130,7 +130,7 @@ class ShortenHandlerTest(unittest.TestCase):
                                      content_type='application/json',
                                      follow_redirects=False)
         self.assertEqual(bad_response.status_code, 401)
-        self.assertEqual(json.loads(bad_response.data)['errors'], ['bad request, should have team session data'])
+        self.assertEqual(json.loads(bad_response.data)['errors'], ['bad request, should have access token data'])
         self.app.set_cookie('localhost', 'team', str(self.team_id))
         response = self.app.post('/api/v1/shorten',
                                  data=json.dumps({'url': 'http://github.com', 'domain': 'jmpt.me'}),

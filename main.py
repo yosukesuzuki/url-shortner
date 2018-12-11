@@ -58,10 +58,22 @@ def team_id_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         team_id = request.cookies.get('team', False)
-        team_name = validate_team_user(team_id, users.get_current_user().user_id())
+        team_name = False
+        if team_id is False and request.get_json() is not None:
+            access_token_key = request.get_json().get('access_token', False)
+            if access_token_key is False:
+                return make_response(jsonify({'errors': ['bad request, should have access token data']}), 401)
+            access_token_entity = APIToken.get_by_id(access_token_key)
+            team_id = access_token_entity.team.id()
+            user_id = ''.join(access_token_entity.created_by.id().split('_')[-1:])
+            team_name = validate_team_user(team_id, user_id)
+        else:
+            user_id = users.get_current_user().user_id()
+            team_name = validate_team_user(team_id, user_id)
         if team_name is False:
             return make_response(jsonify({'errors': ['bad request, should have team session data']}), 401)
-        return f(team_id, team_name, *args, **kwargs)
+        team_user_id = "{}_{}".format(team_id, user_id)
+        return f(team_id, team_name, team_user_id, *args, **kwargs)
 
     return decorated_function
 
@@ -158,7 +170,7 @@ def signin():
 
 @app.route('/page/signout', methods=['GET'])
 @team_id_required
-def signout(team_id, team_name):
+def signout(team_id, team_name, team_user_id):
     response = make_response(redirect(url_for('index')))
     logging.info('remove cookie "team":{}'.format(team_id))
     response.set_cookie('team', '', expires=0)
@@ -167,7 +179,7 @@ def signout(team_id, team_name):
 
 @app.route('/page/settings', methods=['GET', 'POST'])
 @team_id_required
-def settings(team_id, team_name):
+def settings(team_id, team_name, team_user_id):
     form = InvitationForm(request.form)
     messages = []
     errors = []
@@ -203,7 +215,7 @@ def settings(team_id, team_name):
 
 @app.route('/page/token', methods=['POST'])
 @team_id_required
-def generate_token(team_id, team_name):
+def generate_token(team_id, team_name, team_user_id):
     user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
     user_entity = User.get_by_id(user_key_name)
     if user_entity.role in ['primary_owner', 'admin']:
@@ -218,7 +230,7 @@ def generate_token(team_id, team_name):
 
 @app.route('/page/delete/token/<token_id>', methods=['post'])
 @team_id_required
-def delete_token(team_id, team_name, token_id):
+def delete_token(team_id, team_name, team_user_id, token_id):
     user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
     user_entity = User.get_by_id(user_key_name)
     if user_entity.role in ['primary_owner', 'admin']:
@@ -236,7 +248,7 @@ def delete_token(team_id, team_name, token_id):
 
 @app.route('/page/role', methods=['POST'])
 @team_id_required
-def change_role(team_id, team_name):
+def change_role(team_id, team_name, team_user_id):
     user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
     user_entity = User.get_by_id(user_key_name)
     form = RoleForm(request.form)
@@ -288,7 +300,7 @@ def accept_invitation(invitation_id):
 
 @app.route('/page/detail/<short_url_domain>/<short_url_path>', methods=['GET'])
 @team_id_required
-def detail(team_id, team_name, short_url_domain, short_url_path):
+def detail(team_id, team_name, team_user_id, short_url_domain, short_url_path):
     user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
     user_entity = User.get_by_id(user_key_name)
     short_url = ShortURL.get_by_id("{}_{}".format(short_url_domain, short_url_path))
@@ -302,7 +314,7 @@ def detail(team_id, team_name, short_url_domain, short_url_path):
 
 @app.route('/image/qr/<short_url_domain>/<short_url_path>', methods=['GET'])
 @team_id_required
-def generate_qrcode(team_id, team_name, short_url_domain, short_url_path):
+def generate_qrcode(team_id, team_name, team_user_id, short_url_domain, short_url_path):
     short_url = ShortURL.get_by_id("{}_{}".format(short_url_domain, short_url_path))
     if short_url is None:
         return make_response(render_template('404.html'), 404)
@@ -329,9 +341,8 @@ def generate_short_url_path(long_url):  # type: (str) -> str
 
 @app.route('/api/v1/shorten', methods=['POST'])
 @team_id_required
-def shorten(team_id, team_name):
-    user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
-    user_entity = User.get_by_id(user_key_name)
+def shorten(team_id, team_name, team_user_id):
+    user_entity = User.get_by_id(team_user_id)
     form = LongURLForm.from_json(request.get_json())
     if form.validate():
         if form.custom_path.data is None or (form.custom_path.data) == 0:
@@ -375,7 +386,7 @@ def shorten(team_id, team_name):
 
 @app.route('/api/v1/short_urls/<short_url_domain>/<short_url_path>', methods=['GET', 'PATCH'])
 @team_id_required
-def update_shorten_url(team_id, team_name, short_url_domain, short_url_path):
+def update_shorten_url(team_id, team_name, team_user_id, short_url_domain, short_url_path):
     user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
     user_entity = User.get_by_id(user_key_name)
     short_url = ShortURL.get_by_id("{}_{}".format(short_url_domain, short_url_path))
@@ -407,7 +418,7 @@ def update_shorten_url(team_id, team_name, short_url_domain, short_url_path):
 
 @app.route('/api/v1/short_urls/<short_url_domain>/<short_url_path>/tags/<tag>', methods=['DELETE'])
 @team_id_required
-def delete_shorten_url_tag(team_id, team_name, short_url_domain, short_url_path, tag):
+def delete_shorten_url_tag(team_id, team_name, team_user_id, short_url_domain, short_url_path, tag):
     user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
     user_entity = User.get_by_id(user_key_name)
     short_url = ShortURL.get_by_id("{}_{}".format(short_url_domain, short_url_path))
@@ -428,7 +439,7 @@ def delete_shorten_url_tag(team_id, team_name, short_url_domain, short_url_path,
 
 @app.route('/api/v1/short_urls/<short_url_domain>/<short_url_path>', methods=['DELETE'])
 @team_id_required
-def delete_shorten_url(team_id, team_name, short_url_domain, short_url_path):
+def delete_shorten_url(team_id, team_name, team_user_id, short_url_domain, short_url_path):
     short_url = ShortURL.get_by_id("{}_{}".format(short_url_domain, short_url_path))
     if short_url is None:
         return make_response(jsonify({'errors': ['the short url was not found']}), 404)
@@ -440,7 +451,7 @@ def delete_shorten_url(team_id, team_name, short_url_domain, short_url_path):
 
 @app.route('/api/v1/short_urls', methods=['GET'])
 @team_id_required
-def shorten_urls(team_id, team_name):
+def shorten_urls(team_id, team_name, team_user_id):
     user_key_name = "{}_{}".format(team_id, users.get_current_user().user_id())
     user_entity = User.get_by_id(user_key_name)
     q = ShortURL.query()
@@ -461,7 +472,7 @@ def shorten_urls(team_id, team_name):
 
 @app.route('/api/v1/data/<short_url_domain>/<short_url_path>', methods=['GET'])
 @team_id_required
-def data_short_url(team_id, team_name, short_url_domain, short_url_path):
+def data_short_url(team_id, team_name, team_user_id, short_url_domain, short_url_path):
     short_url = ShortURL.get_by_id("{}_{}".format(short_url_domain, short_url_path))
     if short_url is None:
         return make_response(jsonify({'errors': ['data not found']}), 404)
