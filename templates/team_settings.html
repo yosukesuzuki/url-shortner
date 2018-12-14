@@ -84,4 +84,49 @@
             </table>
         </div>
     </div>
+    <div class="columns">
+        <div class="is-half column">
+            <h2 class="title">API Token</h2>
+            <form method="post" action="{{ url_for('generate_token') }}">
+                <div class="field is-grouped">
+                    <div class="control">
+                        <button class="button is-primary">Generate API Token</button>
+                    </div>
+                </div>
+            </form>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Token</th>
+                    <th>Created by</th>
+                    <th>Created</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for token in api_tokens %}
+                    <tr>
+                        <td>{{ token['token'] }}</td>
+                        <td>{{ token['created_by'] }}</td>
+                        <td>
+                            {{ token['created_at'] }}
+                        </td>
+                        <td>
+                            {% if current_user.role in ('primary_owner', 'admin') %}
+                            <form method="post" action="{{ url_for('delete_token', token_id=token['token']) }}">
+                                <div class="field is-grouped">
+                                    <div class="control">
+                                        <button class="button is-danger">Delete</button>
+                                    </div>
+                                </div>
+                            </form>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 {% endblock %}
