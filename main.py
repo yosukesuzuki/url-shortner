@@ -357,7 +357,7 @@ def shorten(team_id, team_name, team_user_id):
         except HTTPError:
             ogp = {'title': '', 'description': '', 'site_name': '', 'image': ''}
             warning = 'cannot look up URL, is this right URL?'
-        except KeyError:
+        except (KeyError, AttributeError):
             ogp = {'title': '', 'description': '', 'site_name': '', 'image': ''}
             warning = 'cannot parse OGP data'
         short_url_string = "{}/{}".format(form.domain.data, path)
