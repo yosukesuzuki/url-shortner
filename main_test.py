@@ -277,7 +277,7 @@ class ShortenHandlerTest(unittest.TestCase):
         self.assertEqual(json.loads(delete_response.data)['success'], 'the url was deleted')
 
 
-class ShortURLAPITest(unittest.TestCase):
+class ShortURLsAPITest(unittest.TestCase):
     def setUp(self):
         self.policy = datastore_stub_util.PseudoRandomHRConsistencyPolicy(probability=1)
         self.testbed = testbed.Testbed()

@@ -343,7 +343,8 @@ def generate_short_url_path(long_url):  # type: (str) -> str
 @team_id_required
 def shorten(team_id, team_name, team_user_id):
     user_entity = User.get_by_id(team_user_id)
-    form = LongURLForm.from_json(request.get_json())
+    json_data = request.get_json()
+    form = LongURLForm.from_json(json_data)
     if form.validate():
         if form.custom_path.data is None or (form.custom_path.data) == 0:
             path = generate_short_url_path(form.url.data)
@@ -360,10 +361,15 @@ def shorten(team_id, team_name, team_user_id):
             ogp = {'title': '', 'description': '', 'site_name': '', 'image': ''}
             warning = 'cannot parse OGP data'
         short_url_string = "{}/{}".format(form.domain.data, path)
+        if json_data.get('access_token', False):
+            generated_by_api = True
+        else:
+            generated_by_api = False
         short_url = ShortURL(id=key_name, long_url=form.url.data, short_url=short_url_string,
                              team=user_entity.team, updated_by=user_entity.key, created_by=user_entity.key,
                              title=ogp.get('title', ''), description=ogp.get('description', ''),
-                             site_name=ogp.get('site_name', ''), image=ogp.get('image', '')
+                             site_name=ogp.get('site_name', ''), image=ogp.get('image', ''),
+                             generated_by_api=generated_by_api
                              )
         short_url.put()
         result = {'short_url': short_url_string,
