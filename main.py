@@ -38,7 +38,7 @@ wtforms_json.init()
 app = Flask(__name__)
 
 
-def validate_team_user(team_id, user_id):  # type(str, str) -> bool
+def validate_team_user(team_id, user_id):  # type(str, str) -> str
     team_user_id = "{}_{}".format(team_id, user_id)
     memcache_key = "validation-{}".format(team_user_id)
     validation_result = memcache.get(memcache_key)
@@ -51,14 +51,14 @@ def validate_team_user(team_id, user_id):  # type(str, str) -> bool
         memcache.set(memcache_key, team_name)
         return team_name
     logging.info('validation failed: team_id = {}, user_id = {}'.format(team_id, user_id))
-    return False
+    return ''
 
 
 def team_id_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         team_id = request.cookies.get('team', False)
-        team_name = False
+        team_name = ''
         if team_id is False and request.get_json() is not None:
             access_token_key = request.get_json().get('access_token', False)
             if access_token_key is False:
@@ -70,7 +70,7 @@ def team_id_required(f):
         else:
             user_id = users.get_current_user().user_id()
             team_name = validate_team_user(team_id, user_id)
-        if team_name is False:
+        if team_name == '':
             return make_response(jsonify({'errors': ['bad request, should have team session data']}), 401)
         team_user_id = "{}_{}".format(team_id, user_id)
         return f(team_id, team_name, team_user_id, *args, **kwargs)
