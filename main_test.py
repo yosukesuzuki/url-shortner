@@ -500,7 +500,7 @@ class RedirectLoggingTest(unittest.TestCase):
         self.assertEquals(click_results[0].user_agent_os, 'iOS')
         self.assertEquals(click_results[0].user_agent_os_version, '11.2.1')
         self.assertEquals(click_results[0].user_agent_browser, 'Mobile Safari')
-        self.assertEquals(click_results[0].user_agent_browser_version, '11')
+        self.assertEquals(click_results[0].user_agent_browser_version, '11.0')
         self.assertEquals(click_results[0].referrer, 'https://www.google.co.jp/search')
         self.assertEquals(click_results[0].referrer_name, 'Google')
         self.assertEquals(click_results[0].referrer_medium, 'search')
