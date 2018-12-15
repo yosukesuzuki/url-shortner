@@ -99,19 +99,18 @@
                     document.querySelector('#shorten-error-message').innerText = '';
                     if (response.data.warning !== null) {
                         document.querySelector('#shorten-error-message').innerText = response.data.warning;
-                        document.querySelector('#result-card').setAttribute('style', 'visibility: hidden');
-                    } else {
-                        const shortURLDomain = response.data.short_url !== null ? response.data.short_url.split('/')[0] : "";
-                        const shortURLPath = response.data.short_url !== null ? response.data.short_url.split('/')[1] : "";
-                        const resultHTML = mediaObjTemplate.replace(/@@image/g, response.data.image)
-                            .replace(/@@title/g, response.data.title)
-                            .replace(/@@short_url_domain/g, shortURLDomain)
-                            .replace(/@@short_url_path/g, shortURLPath)
-                            .replace(/@@long_url/g, response.data.long_url)
-                            .replace(/@@id/g, response.data.id)
-                            .replace(/@@tags/g, '');
-                        document.querySelector('#short_urls').insertAdjacentHTML('afterbegin', resultHTML);
+                        // document.querySelector('#result-card').setAttribute('style', 'visibility: hidden');
                     }
+                    const shortURLDomain = response.data.short_url !== null ? response.data.short_url.split('/')[0] : "";
+                    const shortURLPath = response.data.short_url !== null ? response.data.short_url.split('/')[1] : "";
+                    const resultHTML = mediaObjTemplate.replace(/@@image/g, response.data.image)
+                        .replace(/@@title/g, response.data.title)
+                        .replace(/@@short_url_domain/g, shortURLDomain)
+                        .replace(/@@short_url_path/g, shortURLPath)
+                        .replace(/@@long_url/g, response.data.long_url)
+                        .replace(/@@id/g, response.data.id)
+                        .replace(/@@tags/g, '');
+                    document.querySelector('#short_urls').insertAdjacentHTML('afterbegin', resultHTML);
                     document.querySelector('div.spinner').setAttribute('style', 'visibility: hidden');
                 })
                 .catch(function (error) {

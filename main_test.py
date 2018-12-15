@@ -25,7 +25,7 @@ from google.appengine.ext import testbed
 from google.appengine.ext import deferred
 from main import app
 from mock import patch
-from models import User, Team, ShortURL, Click, Invitation
+from models import User, Team, ShortURL, Click, Invitation, APIToken
 
 
 class MainHandlerTest(unittest.TestCase):
@@ -130,7 +130,7 @@ class ShortenHandlerTest(unittest.TestCase):
                                      content_type='application/json',
                                      follow_redirects=False)
         self.assertEqual(bad_response.status_code, 401)
-        self.assertEqual(json.loads(bad_response.data)['errors'], ['bad request, should have team session data'])
+        self.assertEqual(json.loads(bad_response.data)['errors'], ['bad request, should have access token data'])
         self.app.set_cookie('localhost', 'team', str(self.team_id))
         response = self.app.post('/api/v1/shorten',
                                  data=json.dumps({'url': 'http://github.com', 'domain': 'jmpt.me'}),
@@ -277,7 +277,82 @@ class ShortenHandlerTest(unittest.TestCase):
         self.assertEqual(json.loads(delete_response.data)['success'], 'the url was deleted')
 
 
-class ShortURLAPITest(unittest.TestCase):
+class ShortenByAPIHandlerTest(unittest.TestCase):
+    def setUp(self):
+        self.policy = datastore_stub_util.PseudoRandomHRConsistencyPolicy(probability=1)
+        self.testbed = testbed.Testbed()
+        self.testbed.activate()
+        self.testbed.init_datastore_v3_stub(consistency_policy=self.policy)
+        self.testbed.init_memcache_stub()
+        self.testbed.setup_env(
+            user_email='example@example.com',
+            user_id='1234567890',
+            user_is_admin='0',
+            overwrite=True)
+        self.app = app.test_client()
+        ndb.get_context().clear_cache()
+        new_team = Team(team_name='hoge', billing_plan='trial',
+                        team_domain='ysk')
+        new_team_key = new_team.put()
+        new_team = new_team_key.get()
+        new_team_key_id = new_team_key.id()
+        self.team_id = new_team_key_id
+        user_key_name = "{}_{}".format(new_team_key_id, users.get_current_user().user_id())
+        logging.info(user_key_name)
+        new_team_user = User(id=user_key_name,
+                             user_name='hoge',
+                             email='example@example.com',
+                             team=new_team.key,
+                             role='primary_owner',
+                             user=users.get_current_user())
+        new_team_user.put()
+        self.user_id = user_key_name
+
+    def tearDown(self):
+        self.testbed.deactivate()
+
+    @patch('opengraph.OpenGraph')
+    def testShortenPost(self, OpenGraph):
+        OpenGraph.return_value = {'title': 'GitHub', 'description': 'GitHub is where people build software',
+                                  'site_name': 'GitHub',
+                                  'image': 'https://assets-cdn.github.com/images/modules/open_graph/github-logo.png'}
+        self.app.set_cookie('localhost', 'team', str(self.team_id))
+        token_response = self.app.post('/page/token',
+                                       follow_redirects=False)
+        self.assertEquals(token_response.status_code, 302)
+        self.assertEquals(token_response.location.endswith('/page/settings'), True)
+        team_users = User.query().filter(User.team == Team.get_by_id(int(self.team_id)).key).order(
+            -Team.created_at).fetch()
+        team_user_dic = {u.key.id(): u.user_name for u in team_users}
+        qo = ndb.QueryOptions(keys_only=True)
+        api_token_query = APIToken.query().filter(APIToken.team == Team.get_by_id(int(self.team_id)).key).order(
+            -APIToken.created_at).fetch(1000, options=qo)
+        api_token_query_results = ndb.get_multi(api_token_query)
+        api_tokens = [
+            {'token': t.key.id(), 'created_by': team_user_dic[t.created_by.id()], 'created_at': str(t.created_at)}
+            for t in api_token_query_results if t is not None]
+        access_token = api_tokens[0]['token']
+        api_client = app.test_client()
+        response = api_client.post('/api/v1/shorten',
+                                   data=json.dumps(
+                                       {'url': 'http://github.com', 'domain': 'jmpt.me', 'access_token': access_token}),
+                                   content_type='application/json',
+                                   follow_redirects=False)
+        self.assertEqual(response.status_code, 200)
+        short_urls = ShortURL.query().fetch(1000)
+        self.assertEqual(short_urls[0].long_url, 'http://github.com')
+        self.assertEqual(short_urls[0].created_by, User.get_by_id(self.user_id).key)
+        self.assertEqual(short_urls[0].key.id().startswith('jmpt.me_'), True)
+        self.assertEqual(short_urls[0].team.id(), self.team_id)
+        self.assertEqual(short_urls[0].title, 'GitHub')
+        self.assertEqual(short_urls[0].image,
+                         'https://assets-cdn.github.com/images/modules/open_graph/github-logo.png')
+        self.assertEqual(short_urls[0].site_name, 'GitHub')
+        self.assertEqual(short_urls[0].description, 'GitHub is where people build software')
+        self.assertEqual(short_urls[0].generated_by_api, True)
+
+
+class ShortURLsAPITest(unittest.TestCase):
     def setUp(self):
         self.policy = datastore_stub_util.PseudoRandomHRConsistencyPolicy(probability=1)
         self.testbed = testbed.Testbed()
@@ -425,7 +500,7 @@ class RedirectLoggingTest(unittest.TestCase):
         self.assertEquals(click_results[0].user_agent_os, 'iOS')
         self.assertEquals(click_results[0].user_agent_os_version, '11.2.1')
         self.assertEquals(click_results[0].user_agent_browser, 'Mobile Safari')
-        self.assertEquals(click_results[0].user_agent_browser_version, '11')
+        self.assertEquals(click_results[0].user_agent_browser_version, '11.0')
         self.assertEquals(click_results[0].referrer, 'https://www.google.co.jp/search')
         self.assertEquals(click_results[0].referrer_name, 'Google')
         self.assertEquals(click_results[0].referrer_medium, 'search')
